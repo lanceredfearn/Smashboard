@@ -1,0 +1,1 @@
+// Full SetupPanel.tsx implementation

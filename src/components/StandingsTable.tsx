@@ -1,0 +1,1 @@
+// Full StandingsTable.tsx implementation

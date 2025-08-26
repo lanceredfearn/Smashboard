@@ -1,0 +1,1 @@
+// Full PayoutsTable.tsx implementation
