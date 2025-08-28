@@ -13,7 +13,6 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from 'react';
 import { useTournament } from '../state/useTournament';
-import { fetchDUPRRating } from '../utils/dupr';
 
 export default function PlayerList() {
     const players = useTournament(s => s.players);
@@ -43,19 +42,6 @@ export default function PlayerList() {
         setName('');
         setRating('');
     };
-
-    useEffect(() => {
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-            setRating('');
-            return;
-        }
-        const timer = setTimeout(async () => {
-            const fetched = await fetchDUPRRating(trimmedName);
-            if (fetched !== null) setRating(fetched.toString());
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [name]);
 
     return (
         <Stack spacing={1.5}>
