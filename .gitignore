@@ -1,5 +1,5 @@
 # Dependencies
-node_modules/
+**/node_modules/
 .pnp
 .pnp.js
 
@@ -42,3 +42,6 @@ Thumbs.db
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# Backend build
+backend/target/
