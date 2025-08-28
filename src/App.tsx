@@ -1,4 +1,4 @@
-import { Container, Paper, Stack, Typography } from '@mui/material';
+import { Container, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import SetupPanel from './components/SetupPanel';
 import PlayerList from './components/PlayerList';
@@ -7,6 +7,7 @@ import CourtsGrid from './components/CourtsGrid';
 import StandingsTable from './components/StandingsTable';
 import PayoutsTable from './components/PayoutsTable';
 import { useTournament } from './state/useTournament';
+import Panel from './components/Panel';
 
 export default function App() {
   const started = useTournament(s => s.started);
@@ -26,16 +27,16 @@ export default function App() {
 
       <Grid container spacing={2}>
         <Grid xs={12} md={4}>
-          <Paper sx={{ p: 2 }}>
+          <Panel>
             <SetupPanel />
-          </Paper>
-          <Paper sx={{ p: 2, mt: 2 }}>
+          </Panel>
+          <Panel sx={{ mt: 2 }}>
             <PlayerList />
-          </Paper>
+          </Panel>
         </Grid>
 
         <Grid xs={12} md={8}>
-          <Paper sx={{ p: 2 }}>
+          <Panel>
             <RoundControls />
             {!started && (
               <Typography mt={2} color="text.secondary">
@@ -43,18 +44,18 @@ export default function App() {
               </Typography>
             )}
             <CourtsGrid />
-          </Paper>
+          </Panel>
 
-          <Paper sx={{ p: 2, mt: 2 }}>
+          <Panel sx={{ mt: 2 }}>
             <Typography variant="h6" gutterBottom>
               Standings {started ? `– Round ${round} of ${totalRounds}` : round >= totalRounds && round > 0 ? '– Final Results' : ''}
             </Typography>
             <StandingsTable />
-          </Paper>
+          </Panel>
 
-          <Paper sx={{ p: 2, mt: 2 }}>
+          <Panel sx={{ mt: 2 }}>
             <PayoutsTable />
-          </Paper>
+          </Panel>
         </Grid>
       </Grid>
     </Container>
