@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import Paper from '@mui/material/Paper';
 import { SxProps, Theme } from '@mui/material/styles';
 

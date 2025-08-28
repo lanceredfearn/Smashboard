@@ -3,28 +3,25 @@ import { useTournament } from '../state/useTournament';
 import { exportCSV } from '../utils/csv';
 
 export default function StandingsTable() {
-    const standings = useTournament(s => s.standings());
+    const standingsList = useTournament(s => s.standings());
     const players = useTournament(s => s.players);
 
     if (!players.length) return null;
 
-    const onExport = () => {
+    const exportStandings = () => {
         const rows: string[][] = [
-            ['Rank', 'Player', 'Points', 'W', 'L', 'Court1 Finishes']
-        ];
-        standings.forEach((p, i) =>
-            rows.push([
+            ['Rank', 'Player', 'Points', 'W', 'L', 'Court1 Finishes'],
+            ...standingsList.map((p, i) => [
                 String(i + 1),
                 p.name,
                 String(p.points),
                 String(p.wins),
                 String(p.losses),
-                String(p.court1Finishes)
-            ])
-        );
+                String(p.court1Finishes),
+            ]),
+        ];
         exportCSV('standings.csv', rows);
     };
-
 
     return (
         <>
@@ -40,7 +37,7 @@ export default function StandingsTable() {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {standings.map((p, i) => (
+                    {standingsList.map((p, i) => (
                         <TableRow key={p.id}>
                             <TableCell>{i + 1}</TableCell>
                             <TableCell>{p.name}</TableCell>
@@ -52,7 +49,9 @@ export default function StandingsTable() {
                     ))}
                 </TableBody>
             </Table>
-            <Button sx={{ mt: 1 }} onClick={onExport}>Export CSV</Button>
+            <Button sx={{ mt: 1 }} onClick={exportStandings}>
+                Export CSV
+            </Button>
         </>
     );
 }

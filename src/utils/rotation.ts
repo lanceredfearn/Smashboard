@@ -26,35 +26,40 @@ export function seedInitialCourts(players: Player[], courts: number): CourtState
 
 export function formTeamsAvoidingRepeat(
     participants: string[],
-    getP: (id: string) => Player
+    getPlayer: (id: string) => Player
 ): { A: string[]; B: string[] } {
     if (participants.length !== 4) {
         return { A: participants.slice(0, 2), B: participants.slice(2, 4) };
     }
-    const perms: string[][] = [
+    const permutations: string[][] = [
         [participants[0], participants[1], participants[2], participants[3]],
         [participants[0], participants[2], participants[1], participants[3]],
         [participants[0], participants[3], participants[1], participants[2]],
     ];
-    const score = (p: string[]) => {
-        const a = [p[0], p[1]], b = [p[2], p[3]];
-        const p0 = getP(a[0]).lastPartnerId === a[1] ? 1 : 0;
-        const p1 = getP(a[1]).lastPartnerId === a[0] ? 1 : 0;
-        const p2 = getP(b[0]).lastPartnerId === b[1] ? 1 : 0;
-        const p3 = getP(b[1]).lastPartnerId === b[0] ? 1 : 0;
+    const score = (combo: string[]) => {
+        const a = [combo[0], combo[1]];
+        const b = [combo[2], combo[3]];
+        const p0 = getPlayer(a[0]).lastPartnerId === a[1] ? 1 : 0;
+        const p1 = getPlayer(a[1]).lastPartnerId === a[0] ? 1 : 0;
+        const p2 = getPlayer(b[0]).lastPartnerId === b[1] ? 1 : 0;
+        const p3 = getPlayer(b[1]).lastPartnerId === b[0] ? 1 : 0;
         return p0 + p1 + p2 + p3;
     };
-    let best = perms[0], bestScore = score(perms[0]);
-    for (let i = 1; i < perms.length; i++) {
-        const s = score(perms[i]);
-        if (s < bestScore) { best = perms[i]; bestScore = s; }
+    let best = permutations[0];
+    let bestScore = score(permutations[0]);
+    for (let i = 1; i < permutations.length; i++) {
+        const s = score(permutations[i]);
+        if (s < bestScore) {
+            best = permutations[i];
+            bestScore = s;
+        }
     }
     return { A: [best[0], best[1]], B: [best[2], best[3]] };
 }
 
 export function moveAndReform(
     courts: CourtState[],
-    getP: (id: string) => Player
+    getPlayer: (id: string) => Player
 ): CourtState[] {
     const top = courts.length;
     const arrivals: Record<number, string[]> = {};
@@ -79,7 +84,7 @@ export function moveAndReform(
             next.push({ court: c, teamA: prev.teamA.slice(), teamB: prev.teamB.slice() });
             continue;
         }
-        const { A, B } = formTeamsAvoidingRepeat(ids, getP);
+        const { A, B } = formTeamsAvoidingRepeat(ids, getPlayer);
         next.push({ court: c, teamA: A, teamB: B });
     }
     return next;
