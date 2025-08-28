@@ -10,7 +10,7 @@ export default function StandingsTable() {
 
     const onExport = () => {
         const rows: string[][] = [
-            ['Rank', 'Player', 'Points', 'W', 'L', 'T', 'Court1 Finishes']
+            ['Rank', 'Player', 'Points', 'W', 'L', 'Court1 Finishes']
         ];
         standings.forEach((p, i) =>
             rows.push([
@@ -19,7 +19,6 @@ export default function StandingsTable() {
                 String(p.points),
                 String(p.wins),
                 String(p.losses),
-                String(p.ties),
                 String(p.court1Finishes)
             ])
         );
@@ -37,7 +36,6 @@ export default function StandingsTable() {
                         <TableCell>Pts</TableCell>
                         <TableCell>W</TableCell>
                         <TableCell>L</TableCell>
-                        <TableCell>T</TableCell>
                         <TableCell>Ct1</TableCell>
                     </TableRow>
                 </TableHead>
@@ -49,7 +47,6 @@ export default function StandingsTable() {
                             <TableCell>{p.points}</TableCell>
                             <TableCell>{p.wins}</TableCell>
                             <TableCell>{p.losses}</TableCell>
-                            <TableCell>{p.ties}</TableCell>
                             <TableCell>{p.court1Finishes}</TableCell>
                         </TableRow>
                     ))}

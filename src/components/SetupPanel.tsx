@@ -1,16 +1,15 @@
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useTournament } from '../state/useTournament';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 export default function SetupPanel() {
-    const { maxCourts, totalRounds, entryFee, payoutPercents, roundSeconds, started } = useTournament();
+    const { maxCourts, totalRounds, entryFee, payoutPercents, started } = useTournament();
     const setConfig = useTournament(s => s.setConfig);
     const start = useTournament(s => s.startTournament);
     const reset = useTournament(s => s.reset);
     const canStart = useTournament(s => s.canStart);
 
     const [splitText, setSplitText] = useState(payoutPercents.map(p => Math.round(p)).join(','));
-    const roundMinutes = useMemo(() => Math.floor(roundSeconds / 60), [roundSeconds]);
 
     return (
         <Stack spacing={1.5}>
@@ -21,13 +20,6 @@ export default function SetupPanel() {
                 value={maxCourts}
                 onChange={e => setConfig({ maxCourts: Math.max(1, Math.min(10, Number(e.target.value || 10))) })}
                 disabled={started}
-                size="small"
-            />
-            <TextField
-                label="Round Length (minutes)"
-                type="number"
-                value={roundMinutes}
-                onChange={e => setConfig({ roundSeconds: Math.max(5, Math.min(60, Number(e.target.value || 12))) * 60 })}
                 size="small"
             />
             <TextField

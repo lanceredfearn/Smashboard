@@ -34,11 +34,10 @@ export default function CourtsGrid() {
                                 <RadioGroup
                                     row
                                     value={c.result ?? ''}
-                                    onChange={(_, v) => mark(c.court, (v as ResultMark) || 'T')}
+                                    onChange={(_, v) => mark(c.court, v as ResultMark)}
                                 >
                                     <FormControlLabel value="A" control={<Radio />} label="A won" />
                                     <FormControlLabel value="B" control={<Radio />} label="B won" />
-                                    <FormControlLabel value="T" control={<Radio />} label="Tie" />
                                 </RadioGroup>
                             </Stack>
                         </CardContent>

@@ -1,13 +1,18 @@
-import type { CourtState, Player } from '../types';
+import type { CourtState, Player, ResultMark } from '../types';
 
-const shuffle = <T,>(arr: T[]): T[] => {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
+export function seedInitialCourts(players: Player[], courts: number): CourtState[] {
+    const sorted = players.slice().sort((a, b) => b.rating - a.rating);
+    const grid: CourtState[] = [];
+    for (let c = 1; c <= courts; c++) {
+        const base = (c - 1) * 4;
+        const group = sorted.slice(base, base + 4);
+        if (group.length < 4) break;
+        const teamA = [group[0].id, group[3].id];
+        const teamB = [group[1].id, group[2].id];
+        grid.push({ court: c, teamA, teamB });
     }
-    return a;
-};
+    return grid;
+}
 
 export function formTeamsAvoidingRepeat(
     participants: string[],
@@ -37,20 +42,6 @@ export function formTeamsAvoidingRepeat(
     return { A: [best[0], best[1]], B: [best[2], best[3]] };
 }
 
-export function initialSeat(playerIds: string[], courts: number): CourtState[] {
-    const shuffled = shuffle(playerIds);
-    const grid: CourtState[] = [];
-    for (let c = 1; c <= courts; c++) {
-        const base = (c - 1) * 4;
-        grid.push({
-            court: c,
-            teamA: shuffled.slice(base, base + 2),
-            teamB: shuffled.slice(base + 2, base + 4),
-        });
-    }
-    return grid;
-}
-
 export function moveAndReform(
     courts: CourtState[],
     getP: (id: string) => Player
@@ -59,9 +50,9 @@ export function moveAndReform(
     const arrivals: Record<number, string[]> = {};
 
     for (const c of courts) {
-        const res = c.result ?? 'T';
-        const winners = res === 'A' ? c.teamA : res === 'B' ? c.teamB : [...c.teamA, ...c.teamB];
-        const losers = res === 'A' ? c.teamB : res === 'B' ? c.teamA : [...c.teamA, ...c.teamB];
+        const res = c.result as ResultMark;
+        const winners = res === 'A' ? c.teamA : c.teamB;
+        const losers = res === 'A' ? c.teamB : c.teamA;
 
         const winTarget = c.court === 1 ? 1 : c.court - 1;
         const loseTarget = c.court === top ? top : c.court + 1;
