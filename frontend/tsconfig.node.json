@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler",   // 👈 match root config
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "types": ["node"]
