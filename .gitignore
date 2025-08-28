@@ -44,4 +44,5 @@ Thumbs.db
 # pnpm-lock.yaml
 
 # Backend build
-backend/target/
+backend/build/
+backend/.gradle/
