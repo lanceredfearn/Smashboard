@@ -2,7 +2,7 @@ import { Container, Paper, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import SetupPanel from './components/SetupPanel';
 import PlayerList from './components/PlayerList';
-import TimerControls from './components/TimerControls';
+import RoundControls from './components/RoundControls';
 import CourtsGrid from './components/CourtsGrid';
 import StandingsTable from './components/StandingsTable';
 import PayoutsTable from './components/PayoutsTable';
@@ -36,10 +36,10 @@ export default function App() {
 
         <Grid xs={12} md={8}>
           <Paper sx={{ p: 2 }}>
-            <TimerControls />
+            <RoundControls />
             {!started && (
               <Typography mt={2} color="text.secondary">
-                Add players (multiple of 4), set rounds, then Start Tournament.
+                Add 12-40 players (multiple of 4), set rounds, then Start Tournament.
               </Typography>
             )}
             <CourtsGrid />
@@ -47,7 +47,7 @@ export default function App() {
 
           <Paper sx={{ p: 2, mt: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Standings {started ? `– Round ${round} of ${totalRounds}` : ''}
+              Standings {started ? `– Round ${round} of ${totalRounds}` : round >= totalRounds && round > 0 ? '– Final Results' : ''}
             </Typography>
             <StandingsTable />
           </Paper>

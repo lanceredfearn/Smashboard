@@ -10,14 +10,17 @@ export default function PlayerList() {
     const started = useTournament(s => s.started);
 
     const [name, setName] = useState('');
+    const [rating, setRating] = useState('');
 
     const onAdd = () => {
         const n = name.trim();
-        if (!n) return;
+        const r = Number(rating);
+        if (!n || isNaN(r)) return;
         if (players.length >= 40) { alert('Max 40 players (10 courts × 4).'); return; }
         if (players.some(p => p.name.toLowerCase() === n.toLowerCase())) { alert('Name already added.'); return; }
-        add(n);
+        add(n, r);
         setName('');
+        setRating('');
     };
 
     return (
@@ -25,16 +28,24 @@ export default function PlayerList() {
             <Typography variant="h6">Players ({players.length})</Typography>
             <Stack direction="row" spacing={1}>
                 <TextField
-                    label="Add player name"
+                    label="Player name"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     size="small"
                     fullWidth
                     onKeyDown={e => { if (e.key === 'Enter') onAdd(); }}
                 />
+                <TextField
+                    label="DUPR"
+                    value={rating}
+                    onChange={e => setRating(e.target.value)}
+                    size="small"
+                    sx={{ width: 100 }}
+                    onKeyDown={e => { if (e.key === 'Enter') onAdd(); }}
+                />
                 <Button onClick={onAdd} variant="contained" disabled={started}>Add</Button>
             </Stack>
-            <Typography variant="body2" color="text.secondary">Count must be a multiple of 4 to start.</Typography>
+            <Typography variant="body2" color="text.secondary">Count must be 12-40 and a multiple of 4 to start.</Typography>
             <Divider />
             <List dense sx={{ maxHeight: 280, overflow: 'auto' }}>
                 {players.map(p => (
@@ -45,7 +56,7 @@ export default function PlayerList() {
                             </IconButton>
                         </ListItemSecondaryAction>
                     }>
-                        <ListItemText primary={p.name} />
+                        <ListItemText primary={`${p.name} (${p.rating})`} />
                     </ListItem>
                 ))}
             </List>

@@ -1,22 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CourtState, Player, ResultMark, TournamentState } from '../types';
-import { initialSeat, moveAndReform } from '../utils/rotation';
+import { seedInitialCourts, moveAndReform } from '../utils/rotation';
 
 const uid = () =>
     (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
 type Store = TournamentState & {
-    addPlayer: (name: string) => void;
+    addPlayer: (name: string, rating: number) => void;
     removePlayer: (id: string) => void;
     reset: () => void;
     setConfig: (cfg: Partial<Pick<TournamentState,
-        'maxCourts' | 'totalRounds' | 'entryFee' | 'payoutPercents' | 'roundSeconds'>>) => void;
+        'maxCourts' | 'totalRounds' | 'entryFee' | 'payoutPercents'>>) => void;
     startTournament: () => void;
     markCourtResult: (court: number, result: ResultMark) => void;
     clearRoundResults: () => void;
-    startRoundTimer: () => void;
-    endRoundTimer: () => void;
     nextRound: () => void;
     standings: () => Player[];
     payouts: () => { totalPot: number; places: Array<{ place: number; player?: Player; amount: number }> };
@@ -41,12 +39,10 @@ export const useTournament = create<Store>()(
             totalRounds: 8,
             entryFee: 30,
             payoutPercents: [50, 30, 20],
-            roundSeconds: 12 * 60,
             started: false,
             maxCourts: 10,
-            timerEndsAt: undefined,
 
-            addPlayer: (name) =>
+            addPlayer: (name, rating) =>
                 set((s) => {
                     if (s.started) return s;
                     const exists = s.players.some(p => p.name.toLowerCase() === name.toLowerCase());
@@ -57,7 +53,7 @@ export const useTournament = create<Store>()(
                         points: 0,
                         wins: 0,
                         losses: 0,
-                        ties: 0,
+                        rating,
                         court1Finishes: 0,
                         lastPartnerId: null,
                         history: []
@@ -78,10 +74,8 @@ export const useTournament = create<Store>()(
                 totalRounds: 8,
                 entryFee: 30,
                 payoutPercents: [50, 30, 20],
-                roundSeconds: 12 * 60,
                 started: false,
-                maxCourts: 10,
-                timerEndsAt: undefined
+                maxCourts: 10
             })),
 
             setConfig: (cfg) =>
@@ -98,8 +92,8 @@ export const useTournament = create<Store>()(
 
             canStart: () => {
                 const s = get();
-                return !s.started && s.players.length > 0 &&
-                    s.players.length % 4 === 0 && get().requiredCourts() > 0;
+                return !s.started && s.players.length >= 12 && s.players.length % 4 === 0 &&
+                    s.players.length <= 40 && get().requiredCourts() > 0;
             },
 
             getP: (id: string) => {
@@ -113,9 +107,8 @@ export const useTournament = create<Store>()(
                     if (s.started) return s;
                     const courts = get().requiredCourts();
                     if (courts < 1 || s.players.length % 4 !== 0) return s;
-                    const ids = s.players.map(p => p.id);
-                    const grid = initialSeat(ids, courts);
-                    return { ...s, courts: grid, started: true, round: 1, timerEndsAt: undefined };
+                    const grid = seedInitialCourts(s.players, courts);
+                    return { ...s, courts: grid, started: true, round: 1 };
                 }),
 
             markCourtResult: (court, result) =>
@@ -127,37 +120,26 @@ export const useTournament = create<Store>()(
             clearRoundResults: () =>
                 set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, result: undefined })) })),
 
-            startRoundTimer: () =>
-                set((s) => {
-                    if (!s.started) return s;
-                    const ends = Math.floor(Date.now() / 1000) + Math.max(60, s.roundSeconds);
-                    return { ...s, timerEndsAt: ends };
-                }),
-
-            endRoundTimer: () => set((s) => ({ ...s, timerEndsAt: undefined })),
-
             nextRound: () =>
                 set((s) => {
                     if (!s.started) return s;
+                    if (!s.courts.every(c => c.result)) return s;
 
                     // Update stats
                     for (const court of s.courts) {
-                        const res: ResultMark = court.result ?? 'T';
+                        const res = court.result as ResultMark;
                         const a = court.teamA.map(get().getP);
                         const b = court.teamB.map(get().getP);
 
                         if (res === 'A') {
                             a.forEach(p => { p.points += 2; p.wins++; p.history.push({ round: s.round, court: court.court, team: 'A', result: 'W' }) });
                             b.forEach(p => { p.losses++; p.history.push({ round: s.round, court: court.court, team: 'B', result: 'L' }) });
-                        } else if (res === 'B') {
+                        } else {
                             b.forEach(p => { p.points += 2; p.wins++; p.history.push({ round: s.round, court: court.court, team: 'B', result: 'W' }) });
                             a.forEach(p => { p.losses++; p.history.push({ round: s.round, court: court.court, team: 'A', result: 'L' }) });
-                        } else {
-                            a.forEach(p => { p.points += 1; p.ties++; p.history.push({ round: s.round, court: court.court, team: 'A', result: 'T' }) });
-                            b.forEach(p => { p.points += 1; p.ties++; p.history.push({ round: s.round, court: court.court, team: 'B', result: 'T' }) });
                         }
                         if (court.court === 1) {
-                            const winners = res === 'A' ? a : res === 'B' ? b : [...a, ...b];
+                            const winners = res === 'A' ? a : b;
                             winners.forEach(p => p.court1Finishes++);
                         }
 
@@ -177,7 +159,6 @@ export const useTournament = create<Store>()(
                         ...s,
                         courts: nextCourts.map(c => ({ ...c, result: undefined })),
                         round: final ? s.round : s.round + 1,
-                        timerEndsAt: undefined,
                         started: final ? false : s.started
                     };
                 }),

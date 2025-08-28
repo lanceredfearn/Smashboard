@@ -1,4 +1,4 @@
-export type ResultMark = 'A' | 'B' | 'T';
+export type ResultMark = 'A' | 'B';
 
 export type Player = {
   id: string;
@@ -6,10 +6,10 @@ export type Player = {
   points: number;
   wins: number;
   losses: number;
-  ties: number;
+  rating: number;
   court1Finishes: number;
   lastPartnerId: string | null;
-  history: Array<{ round: number; court: number; team: 'A' | 'B'; result: 'W' | 'L' | 'T' }>;
+  history: Array<{ round: number; court: number; team: 'A' | 'B'; result: 'W' | 'L' }>;
 };
 
 export type CourtState = {
@@ -26,8 +26,6 @@ export type TournamentState = {
   totalRounds: number;
   entryFee: number;
   payoutPercents: number[];
-  roundSeconds: number;
   started: boolean;
   maxCourts: number;
-  timerEndsAt?: number;
 };
