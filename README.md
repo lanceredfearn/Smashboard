@@ -1,28 +1,11 @@
-# King of the Court – Tournament App
+# Smashboard
 
-A React + TypeScript web app to run a **King-of-the-Court style pickleball tournament** with up to **10 courts**.
+This repository contains a React frontend and a Spring Boot backend.
 
-## Features
-- Add 12–40 players with DUPR ratings (4 per court × 10 courts)
-- Automatic DUPR rating lookup by player name
-- Courts seeded by rating
-- Set entry fee (default $30)
-- Automatic payout calculations with customizable % split
-- Winner-up / loser-down rotation logic
-- Avoids repeat partners as much as possible
-- Standings tracked (points, wins, losses, Ct1 finishes)
-- CSV export of standings
+## Running with Docker Compose
 
-## Getting Started
-```bash
-# install dependencies
-npm install
-
-# start dev server
-npm run dev
-
-# build for production
-npm run build
+```sh
+docker compose up --build
 ```
 
-Open http://localhost:5173 to use the app.
+The frontend will be available at [http://localhost:5173](http://localhost:5173) and the backend API at [http://localhost:8080/api/hello](http://localhost:8080/api/hello).
