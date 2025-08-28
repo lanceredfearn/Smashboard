@@ -1,7 +1,8 @@
 import { Button, Divider, IconButton, List, ListItem, ListItemSecondaryAction, ListItemText, Stack, TextField, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTournament } from '../state/useTournament';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { fetchDUPRRating } from '../utils/dupr';
 
 export default function PlayerList() {
     const players = useTournament(s => s.players);
@@ -22,6 +23,15 @@ export default function PlayerList() {
         setName('');
         setRating('');
     };
+
+    useEffect(() => {
+        if (!name.trim()) { setRating(''); return; }
+        const timer = setTimeout(async () => {
+            const r = await fetchDUPRRating(name);
+            if (r !== null) setRating(r.toString());
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [name]);
 
     return (
         <Stack spacing={1.5}>
