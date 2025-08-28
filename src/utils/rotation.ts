@@ -1,14 +1,24 @@
 import type { CourtState, Player, ResultMark } from '../types';
 
 export function seedInitialCourts(players: Player[], courts: number): CourtState[] {
+    // Seed players across courts in rating order. The highest-rated
+    // player goes to court 1, the next to court 2, etc. until each court
+    // has four players. Within a court we pair 1&4 vs 2&3 for the first match.
     const sorted = players.slice().sort((a, b) => b.rating - a.rating);
+
+    // Distribute players to courts round-robin style based on seed order.
+    const assignments: Record<number, string[]> = {};
+    for (let i = 0; i < sorted.length; i++) {
+        const court = (i % courts) + 1;
+        assignments[court] = (assignments[court] ?? []).concat(sorted[i].id);
+    }
+
     const grid: CourtState[] = [];
     for (let c = 1; c <= courts; c++) {
-        const base = (c - 1) * 4;
-        const group = sorted.slice(base, base + 4);
-        if (group.length < 4) break;
-        const teamA = [group[0].id, group[3].id];
-        const teamB = [group[1].id, group[2].id];
+        const ids = assignments[c] ?? [];
+        if (ids.length < 4) break;
+        const teamA = [ids[0], ids[3]];
+        const teamB = [ids[1], ids[2]];
         grid.push({ court: c, teamA, teamB });
     }
     return grid;
