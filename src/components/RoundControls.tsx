@@ -8,17 +8,23 @@ export default function RoundControls() {
     const courts = useTournament(s => s.courts);
     const nextRound = useTournament(s => s.nextRound);
 
-    const allResults = courts.length > 0 && courts.every(c => c.result);
-    const label = started ? `Round ${round}` : round >= totalRounds && round > 0 ? 'Finished' : 'Not started';
+    const allResultsSubmitted = courts.length > 0 && courts.every(c => c.result);
+    const statusLabel = started
+        ? `Round ${round}`
+        : round >= totalRounds && round > 0
+            ? 'Finished'
+            : 'Not started';
 
     return (
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <Stack direction="row" spacing={1} alignItems="center">
-                <Chip label={label} color={started ? 'primary' : 'default'} />
+                <Chip label={statusLabel} color={started ? 'primary' : 'default'} />
                 <Typography variant="body2" color="text.secondary">of {totalRounds}</Typography>
             </Stack>
             <Stack direction="row" spacing={1}>
-                <Button onClick={nextRound} variant="contained" disabled={!started || !allResults}>Next Round</Button>
+                <Button onClick={nextRound} variant="contained" disabled={!started || !allResultsSubmitted}>
+                    Next Round
+                </Button>
             </Stack>
         </Stack>
     );

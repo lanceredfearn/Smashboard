@@ -15,20 +15,20 @@ export async function fetchDUPRRating(name: string): Promise<number | null> {
     if (!name.trim()) return null;
     try {
         const url = `https://uat.dupr.gg/api/v1/players/search?name=${encodeURIComponent(name)}`;
-        const res = await fetch(url, {
+        const response = await fetch(url, {
             headers: {
                 'x-client-id': DUPR_CLIENT_ID,
                 'x-key-id': DUPR_KEY_ID,
                 'x-client-key': DUPR_CLIENT_KEY,
-                'x-client-secret': DUPR_CLIENT_SECRET
-            }
+                'x-client-secret': DUPR_CLIENT_SECRET,
+            },
         });
-        if (!res.ok) return null;
-        const data = await res.json() as PlayerSearchResult;
+        if (!response.ok) return null;
+        const data: PlayerSearchResult = await response.json();
         const player = data.players && data.players[0];
         return player && typeof player.rating === 'number' ? player.rating : null;
-    } catch (err) {
-        console.error('Error fetching DUPR rating', err);
+    } catch (error) {
+        console.error('Error fetching DUPR rating', error);
         return null;
     }
 }

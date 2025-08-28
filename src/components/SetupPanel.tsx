@@ -1,15 +1,23 @@
 import { Button, Stack, TextField, Typography } from '@mui/material';
-import { useTournament } from '../state/useTournament';
 import { useState } from 'react';
+import { useTournament } from '../state/useTournament';
 
 export default function SetupPanel() {
-    const { maxCourts, totalRounds, entryFee, payoutPercents, started } = useTournament();
-    const setConfig = useTournament(s => s.setConfig);
-    const start = useTournament(s => s.startTournament);
-    const reset = useTournament(s => s.reset);
-    const canStart = useTournament(s => s.canStart);
+    const {
+        maxCourts,
+        totalRounds,
+        entryFee,
+        payoutPercents,
+        started,
+        setConfig,
+        startTournament,
+        reset,
+        canStart,
+    } = useTournament();
 
-    const [splitText, setSplitText] = useState(payoutPercents.map(p => Math.round(p)).join(','));
+    const [payoutText, setPayoutText] = useState(
+        payoutPercents.map(p => Math.round(p)).join(',')
+    );
 
     return (
         <Stack spacing={1.5}>
@@ -38,16 +46,23 @@ export default function SetupPanel() {
             />
             <TextField
                 label="Payout Split (%) e.g. 50,30,20"
-                value={splitText}
-                onChange={e => setSplitText(e.target.value)}
+                value={payoutText}
+                onChange={e => setPayoutText(e.target.value)}
                 onBlur={() => {
-                    const arr = splitText.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0);
-                    setConfig({ payoutPercents: arr.length ? arr : [50, 30, 20] });
+                    const split = payoutText
+                        .split(',')
+                        .map(s => Number(s.trim()))
+                        .filter(n => !isNaN(n) && n > 0);
+                    setConfig({ payoutPercents: split.length ? split : [50, 30, 20] });
                 }}
                 size="small"
             />
             <Stack direction="row" spacing={1}>
-                <Button variant="contained" onClick={start} disabled={!canStart()}>
+                <Button
+                    variant="contained"
+                    onClick={startTournament}
+                    disabled={!canStart()}
+                >
                     Start Tournament
                 </Button>
                 <Button variant="outlined" color="error" onClick={reset}>

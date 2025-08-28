@@ -10,9 +10,17 @@ import { useTournament } from './state/useTournament';
 import Panel from './components/Panel';
 
 export default function App() {
-  const started = useTournament(s => s.started);
-  const round = useTournament(s => s.round);
-  const totalRounds = useTournament(s => s.totalRounds);
+  const { started, round, totalRounds } = useTournament(s => ({
+    started: s.started,
+    round: s.round,
+    totalRounds: s.totalRounds,
+  }));
+
+  const standingsLabel = started
+    ? `– Round ${round} of ${totalRounds}`
+    : round >= totalRounds && round > 0
+      ? '– Final Results'
+      : '';
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -21,7 +29,8 @@ export default function App() {
           King-of-the-Court Tournament (10 Courts)
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Winner-up / loser-down (Ct 1 winners & top-court losers stay). Partner mixing reduces repeat partners. Data persists in your browser.
+          Winner-up / loser-down (Ct 1 winners & top-court losers stay). Partner
+          mixing reduces repeat partners. Data persists in your browser.
         </Typography>
       </Stack>
 
@@ -48,7 +57,7 @@ export default function App() {
 
           <Panel sx={{ mt: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Standings {started ? `– Round ${round} of ${totalRounds}` : round >= totalRounds && round > 0 ? '– Final Results' : ''}
+              Standings {standingsLabel}
             </Typography>
             <StandingsTable />
           </Panel>

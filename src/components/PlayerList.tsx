@@ -1,7 +1,18 @@
-import { Button, Divider, IconButton, List, ListItem, ListItemSecondaryAction, ListItemText, Stack, TextField, Typography } from '@mui/material';
+import {
+    Button,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemSecondaryAction,
+    ListItemText,
+    Stack,
+    TextField,
+    Typography,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useTournament } from '../state/useTournament';
 import { useEffect, useState } from 'react';
+import { useTournament } from '../state/useTournament';
 import { fetchDUPRRating } from '../utils/dupr';
 
 export default function PlayerList() {
@@ -13,22 +24,35 @@ export default function PlayerList() {
     const [name, setName] = useState('');
     const [rating, setRating] = useState('');
 
-    const onAdd = () => {
-        const n = name.trim();
-        const r = Number(rating);
-        if (!n || isNaN(r)) return;
-        if (players.length >= 40) { alert('Max 40 players (10 courts × 4).'); return; }
-        if (players.some(p => p.name.toLowerCase() === n.toLowerCase())) { alert('Name already added.'); return; }
-        add(n, r);
+    const handleAdd = () => {
+        const trimmedName = name.trim();
+        const numericRating = Number(rating);
+        if (!trimmedName || isNaN(numericRating)) return;
+        if (players.length >= 40) {
+            alert('Max 40 players (10 courts × 4).');
+            return;
+        }
+        const exists = players.some(
+            p => p.name.toLowerCase() === trimmedName.toLowerCase()
+        );
+        if (exists) {
+            alert('Name already added.');
+            return;
+        }
+        add(trimmedName, numericRating);
         setName('');
         setRating('');
     };
 
     useEffect(() => {
-        if (!name.trim()) { setRating(''); return; }
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            setRating('');
+            return;
+        }
         const timer = setTimeout(async () => {
-            const r = await fetchDUPRRating(name);
-            if (r !== null) setRating(r.toString());
+            const fetched = await fetchDUPRRating(trimmedName);
+            if (fetched !== null) setRating(fetched.toString());
         }, 500);
         return () => clearTimeout(timer);
     }, [name]);
@@ -43,7 +67,9 @@ export default function PlayerList() {
                     onChange={e => setName(e.target.value)}
                     size="small"
                     fullWidth
-                    onKeyDown={e => { if (e.key === 'Enter') onAdd(); }}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter') handleAdd();
+                    }}
                 />
                 <TextField
                     label="DUPR"
@@ -51,9 +77,13 @@ export default function PlayerList() {
                     onChange={e => setRating(e.target.value)}
                     size="small"
                     sx={{ width: 100 }}
-                    onKeyDown={e => { if (e.key === 'Enter') onAdd(); }}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter') handleAdd();
+                    }}
                 />
-                <Button onClick={onAdd} variant="contained" disabled={started}>Add</Button>
+                <Button onClick={handleAdd} variant="contained" disabled={started}>
+                    Add
+                </Button>
             </Stack>
             <Typography variant="body2" color="text.secondary">Count must be 12-40 and a multiple of 4 to start.</Typography>
             <Divider />
