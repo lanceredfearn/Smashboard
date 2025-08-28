@@ -170,14 +170,15 @@ export const useTournament = create<Store>()(
                         const pb1 = get().getP(b1); pb1.lastPartnerId = b0;
                     }
 
-                    const nextCourts = moveAndReform(s.courts, get().getP);
                     const final = s.round >= s.totalRounds;
+                    const nextCourts = final ? s.courts : moveAndReform(s.courts, get().getP);
 
                     return {
                         ...s,
                         courts: nextCourts.map(c => ({ ...c, result: undefined })),
                         round: final ? s.round : s.round + 1,
-                        timerEndsAt: undefined
+                        timerEndsAt: undefined,
+                        started: final ? false : s.started
                     };
                 }),
 
