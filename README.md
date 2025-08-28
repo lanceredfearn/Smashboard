@@ -4,6 +4,7 @@ A React + TypeScript web app to run a **King-of-the-Court style pickleball tourn
 
 ## Features
 - Add 12–40 players with DUPR ratings (4 per court × 10 courts)
+- Automatic DUPR rating lookup by player name
 - Courts seeded by rating
 - Set entry fee (default $30)
 - Automatic payout calculations with customizable % split
