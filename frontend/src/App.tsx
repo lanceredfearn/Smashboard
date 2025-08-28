@@ -8,6 +8,7 @@ import StandingsTable from './components/StandingsTable';
 import PayoutsTable from './components/PayoutsTable';
 import { useTournament } from './state/useTournament';
 import Panel from './components/Panel';
+import '../index.css'
 
 export default function App() {
   const { started, round, totalRounds } = useTournament(s => ({
@@ -59,7 +60,7 @@ export default function App() {
             <Typography variant="h6" gutterBottom>
               Standings {standingsLabel}
             </Typography>
-            <StandingsTable />
+              <StandingsTable />
           </Panel>
 
           <Panel sx={{ mt: 2 }}>
