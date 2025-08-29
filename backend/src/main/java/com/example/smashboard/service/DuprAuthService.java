@@ -5,6 +5,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ public class DuprAuthService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${dupr.email}")
+    @Value("${dupr.username}")
     private String duprEmail;
 
     @Value("${dupr.password}")
@@ -25,10 +26,10 @@ public class DuprAuthService {
 
         String url = "https://api.dupr.gg/auth/v1.0/login";
 
-        Map<String, String> request = Map.of(
-                "email", duprEmail,      // 👈 must be email, not username
-                "password", duprPassword
-        );
+        // ✅ Use LinkedHashMap / HashMap to ensure JSON shape matches browser request
+        Map<String, String> request = new HashMap<>();
+        request.put("email", duprEmail);
+        request.put("password", duprPassword);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -50,6 +51,6 @@ public class DuprAuthService {
             }
         }
 
-        throw new RuntimeException("Login failed: " + response.getStatusCode());
+        throw new RuntimeException("Login failed: " + response.getStatusCode() + " " + response.getBody());
     }
 }

@@ -9,7 +9,7 @@ dist-ssr/
 build/
 
 # Vite
-.vite/
+frontend/.vite/
 
 # Logs
 npm-debug.log*

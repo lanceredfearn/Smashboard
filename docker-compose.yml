@@ -10,6 +10,9 @@ services:
   backend:
     build:
       context: ./backend
+    environment:
+      DUPR_USERNAME: "lance.redfearn@outlook.com"
+      DUPR_PASSWORD: "BR@$$$$m0nk3y"
     ports:
       - "8080:8080"
     depends_on:
@@ -20,5 +23,7 @@ services:
       POSTGRES_USER: smashboard
       POSTGRES_PASSWORD: smashboard
       POSTGRES_DB: smashboard
+      DUPR_USERNAME: "lance.redfearn@outlook.com"
+      DUPR_PASSWORD: "BR@$$$$m0nk3y"
     ports:
       - "5432:5432"
