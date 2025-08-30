@@ -25,10 +25,12 @@ public class DatabaseSeeder {
         for (Map<String, Object> member : members) {
             Player player = new Player();
             player.setId(member.get("id").toString());
-            player.setName((String) member.get("name"));
-            player.setRating(member.get("rating") != null
-                    ? Double.parseDouble(member.get("rating").toString())
-                    : null);
+            player.setName((String) member.get("fullName"));
+            if (member.get("doubles") != "NR" || member.get("doubles") != null) {
+                player.setRating(Double.parseDouble(member.get("doubles").toString()));
+            } else {
+                player.setRating(3.5d);
+            }
             playerService.savePlayer(player);
         }
     }
