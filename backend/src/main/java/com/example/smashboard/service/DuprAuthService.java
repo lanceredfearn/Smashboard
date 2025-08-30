@@ -4,9 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,18 +26,14 @@ public class DuprAuthService {
 
         String url = "https://api.dupr.gg/auth/v1.0/login";
 
-        // Use LinkedHashMap to maintain field order similar to browser request
-        Map<String, String> request = new LinkedHashMap<>();
+        // ✅ Body matches exactly what the curl command sends
+        Map<String, String> request = new HashMap<>();
         request.put("email", duprEmail);
         request.put("password", duprPassword);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("Origin", "https://dashboard.dupr.com");
-        headers.set("Referer", "https://dashboard.dupr.com/");
-        headers.set(HttpHeaders.USER_AGENT,
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36");
 
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 

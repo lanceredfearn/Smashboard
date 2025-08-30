@@ -20,7 +20,7 @@ public class DatabaseSeeder {
 
     public void seed() {
         String token = duprAuthService.loginAndGetToken(); // now pulls from env
-        List<Map<String, Object>> members = duprClubService.getClubMembers(token, "6217578194");
+        List<Map<String, Object>> members = duprClubService.getAllClubMembers(token, "6217578194");
 
         for (Map<String, Object> member : members) {
             Player player = new Player();
