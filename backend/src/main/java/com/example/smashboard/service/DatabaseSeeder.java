@@ -26,11 +26,19 @@ public class DatabaseSeeder {
             Player player = new Player();
             player.setId(member.get("id").toString());
             player.setName((String) member.get("fullName"));
-            if (!member.get("doubles").toString().equals("NR") || member.get("doubles") != null) {
-                player.setRating(Double.parseDouble(member.get("doubles").toString()));
-            } else {
-                player.setRating(3.5d);
+
+            // Default rating
+            double rating = 3.5d;
+            Object doubles = member.get("doubles");
+            if (doubles != null) {
+                try {
+                    rating = Double.parseDouble(doubles.toString());
+                } catch (NumberFormatException ignored) {
+                    // leave default rating if parsing fails (e.g., "NR")
+                }
             }
+            player.setRating(rating);
+
             playerService.savePlayer(player);
         }
     }
