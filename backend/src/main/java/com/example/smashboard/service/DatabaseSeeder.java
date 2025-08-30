@@ -26,7 +26,7 @@ public class DatabaseSeeder {
             Player player = new Player();
             player.setId(member.get("id").toString());
             player.setName((String) member.get("fullName"));
-            if (member.get("doubles") != "NR" || member.get("doubles") != null) {
+            if (!member.get("doubles").toString().equals("NR") || member.get("doubles") != null) {
                 player.setRating(Double.parseDouble(member.get("doubles").toString()));
             } else {
                 player.setRating(3.5d);
