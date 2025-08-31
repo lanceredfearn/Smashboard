@@ -36,13 +36,17 @@ export function formTeamsAvoidingRepeat(
         [participants[0], participants[2], participants[1], participants[3]],
         [participants[0], participants[3], participants[1], participants[2]],
     ];
+    const penalty = (id1: string, id2: string) => {
+        const p = getPlayer(id1);
+        return p.lastPartnerId === id2 || p.partnerHistory.includes(id2) ? 1 : 0;
+    };
     const score = (combo: string[]) => {
         const a = [combo[0], combo[1]];
         const b = [combo[2], combo[3]];
-        const p0 = getPlayer(a[0]).lastPartnerId === a[1] ? 1 : 0;
-        const p1 = getPlayer(a[1]).lastPartnerId === a[0] ? 1 : 0;
-        const p2 = getPlayer(b[0]).lastPartnerId === b[1] ? 1 : 0;
-        const p3 = getPlayer(b[1]).lastPartnerId === b[0] ? 1 : 0;
+        const p0 = penalty(a[0], a[1]);
+        const p1 = penalty(a[1], a[0]);
+        const p2 = penalty(b[0], b[1]);
+        const p3 = penalty(b[1], b[0]);
         return p0 + p1 + p2 + p3;
     };
     let best = permutations[0];

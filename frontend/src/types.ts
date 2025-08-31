@@ -15,6 +15,8 @@ export type Player = {
   rating: number;
   court1Finishes: number;
   lastPartnerId: string | null;
+  /** IDs of partners played with in the current round */
+  partnerHistory: string[];
   history: Array<{ round: number; court: number; team: 'A' | 'B'; result: 'W' | 'L' }>;
 };
 

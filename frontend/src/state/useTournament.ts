@@ -52,6 +52,7 @@ export const useTournament = create<Store>()(
                         rating,
                         court1Finishes: 0,
                         lastPartnerId: null,
+                        partnerHistory: [],
                         history: []
                     };
                     return { ...s, players: [...s.players, p] };
@@ -164,10 +165,10 @@ export const useTournament = create<Store>()(
 
                         const [a0, a1] = c.teamA;
                         const [b0, b1] = c.teamB;
-                        const pa0 = gp(a0); pa0.lastPartnerId = a1;
-                        const pa1 = gp(a1); pa1.lastPartnerId = a0;
-                        const pb0 = gp(b0); pb0.lastPartnerId = b1;
-                        const pb1 = gp(b1); pb1.lastPartnerId = b0;
+                        const pa0 = gp(a0); pa0.lastPartnerId = a1; pa0.partnerHistory.push(a1);
+                        const pa1 = gp(a1); pa1.lastPartnerId = a0; pa1.partnerHistory.push(a0);
+                        const pb0 = gp(b0); pb0.lastPartnerId = b1; pb0.partnerHistory.push(b1);
+                        const pb1 = gp(b1); pb1.lastPartnerId = b0; pb1.partnerHistory.push(b0);
 
                         if (c.game < GAMES_PER_ROUND) {
                             const participants = [...c.teamA, ...c.teamB];
@@ -183,15 +184,22 @@ export const useTournament = create<Store>()(
                     if (roundDone) {
                         let round = s.round + 1;
                         let started = s.started;
+                        const players = s.players.map(p => ({ ...p, partnerHistory: [] }));
+                        const gpRound = (id: string) => {
+                            const player = players.find(x => x.id === id);
+                            if (!player) throw new Error('player not found');
+                            return player;
+                        };
                         let nextCourts: CourtState[] = courts;
                         if (round > s.totalRounds) {
                             round = s.totalRounds;
                             started = false;
                         } else {
-                            nextCourts = moveAndReform(courts, gp).map(c => ({ ...c, game: 1 }));
+                            nextCourts = moveAndReform(courts, gpRound).map(c => ({ ...c, game: 1 }));
                         }
                         return {
                             ...s,
+                            players,
                             courts: nextCourts.map(c => ({
                                 ...c,
                                 scoreA: undefined,
