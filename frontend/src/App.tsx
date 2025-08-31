@@ -12,6 +12,7 @@ import '../index.css'
 
 "use client";
 import {TypewriterEffectSmooth} from "./components/ui/typewriter-effect";
+import {Meteors} from "./components/ui/meteors";
 
 const words = [
     {
@@ -33,20 +34,25 @@ const words = [
 ]
 
 export default function App() {
-    const {started, round, totalRounds} = useTournament(s => ({
+    const {started, round, game, totalRounds} = useTournament(s => ({
         started: s.started,
         round: s.round,
+        game: s.game,
         totalRounds: s.totalRounds,
     }));
 
     const standingsLabel = started
-        ? `– Round ${round} of ${totalRounds}`
+        ? `– Round ${round}, Game ${game}`
         : round >= totalRounds && round > 0
             ? '– Final Results'
             : '';
 
     return (
-        <>
+        <div style={{position: 'relative', minHeight: '100vh'}}>
+            <div style={{position: 'fixed', inset: 0, zIndex: -1, overflow: 'hidden'}}>
+                <Meteors number={30} />
+            </div>
+
             <Stack spacing={2} sx={{mb: 6}}>
                 <div style={{alignSelf: 'center'}}>
                     <TypewriterEffectSmooth words={words}/>
@@ -90,6 +96,6 @@ export default function App() {
                     </Panel>
                 </Grid>
             </Grid>
-        </>
+        </div>
     );
 }

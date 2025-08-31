@@ -32,6 +32,8 @@ export type TournamentState = {
   players: Player[];
   courts: CourtState[];
   round: number;
+  /** Current game within the round (1-indexed) */
+  game: number;
   totalRounds: number;
   entryFee: number;
   started: boolean;

@@ -15,7 +15,7 @@ type Store = TournamentState & {
     startTournament: () => void;
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
     clearRoundResults: () => void;
-    nextRound: () => void;
+    nextGame: () => void;
     standings: () => Player[];
     payouts: () => { totalPot: number; payoutPool: number; places: Array<{ place: number; player?: Player; amount: number }> };
     canStart: () => boolean;
@@ -29,6 +29,7 @@ export const useTournament = create<Store>()(
             players: [],
             courts: [],
             round: 0,
+            game: 0,
             totalRounds: 3,
             entryFee: 30,
             started: false,
@@ -66,6 +67,7 @@ export const useTournament = create<Store>()(
                 players: [],
                 courts: [],
                 round: 0,
+                game: 0,
                 totalRounds: 3,
                 entryFee: 30,
                 started: false,
@@ -106,7 +108,7 @@ export const useTournament = create<Store>()(
                     const courts = get().requiredCourts();
                     if (courts < 1 || s.players.length % 4 !== 0) return s;
                     const grid = seedInitialCourts(s.players, courts);
-                    return { ...s, courts: grid, started: true, round: 1 };
+                    return { ...s, courts: grid, started: true, round: 1, game: 1 };
                 }),
 
             markCourtResult: (court, scores) =>
@@ -118,7 +120,7 @@ export const useTournament = create<Store>()(
             clearRoundResults: () =>
                 set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined })) })),
 
-            nextRound: () =>
+            nextGame: () =>
                 set((s) => {
                     if (!s.started) return s;
                     const valid = s.courts.every(c =>
@@ -176,14 +178,27 @@ export const useTournament = create<Store>()(
                         const pb1 = get().getPlayer(b1); pb1.lastPartnerId = b0;
                     }
 
-                    const final = s.round >= s.totalRounds;
+                    let game = s.game + 1;
+                    let round = s.round;
+                    let started = s.started;
+                    if (game > 3) {
+                        game = 1;
+                        round += 1;
+                        if (round > s.totalRounds) {
+                            round = s.totalRounds;
+                            started = false;
+                        }
+                    }
+
+                    const final = !started;
                     const nextCourts = final ? s.courts : moveAndReform(s.courts, get().getPlayer);
 
                     return {
                         ...s,
                         courts: nextCourts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined })),
-                        round: final ? s.round : s.round + 1,
-                        started: final ? false : s.started
+                        round,
+                        game,
+                        started,
                     };
                 }),
 
