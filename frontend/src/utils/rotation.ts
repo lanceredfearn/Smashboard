@@ -65,7 +65,7 @@ export function moveAndReform(
     courts: CourtState[],
     getPlayer: (id: string) => Player
 ): CourtState[] {
-    const performances: Array<{ id: string; won: boolean; score: number; diff: number }> = [];
+    const performances: Array<{ id: string; won: boolean; score: number; diff: number; rating: number }> = [];
 
     for (const c of courts) {
         const scoreA = c.scoreA ?? 0;
@@ -77,14 +77,15 @@ export function moveAndReform(
         const winners = res === 'A' ? c.teamA : c.teamB;
         const losers = res === 'A' ? c.teamB : c.teamA;
 
-        winners.forEach(id => performances.push({ id, won: true, score: winnerScore, diff }));
-        losers.forEach(id => performances.push({ id, won: false, score: loserScore, diff: -diff }));
+        winners.forEach(id => performances.push({ id, won: true, score: winnerScore, diff, rating: getPlayer(id).rating }));
+        losers.forEach(id => performances.push({ id, won: false, score: loserScore, diff: -diff, rating: getPlayer(id).rating }));
     }
 
     performances.sort((a, b) => {
         if (a.won !== b.won) return a.won ? -1 : 1;
         if (b.score !== a.score) return b.score - a.score;
-        return b.diff - a.diff;
+        if (b.diff !== a.diff) return b.diff - a.diff;
+        return a.rating - b.rating;
     });
 
     const totalCourts = courts.length;
