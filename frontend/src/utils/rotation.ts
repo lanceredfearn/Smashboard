@@ -65,34 +65,26 @@ export function moveAndReform(
     courts: CourtState[],
     getPlayer: (id: string) => Player
 ): CourtState[] {
-    const performances: Array<{ id: string; won: boolean; score: number; diff: number; rating: number }> = [];
+    // Build the list of players ordered by their current overall standings
+    // (total points won, point differential, then rating) so that the top
+    // four occupy court 1, the next four court 2, etc.
+    const players = courts
+        .flatMap(c => [...c.teamA, ...c.teamB])
+        .map(id => getPlayer(id));
 
-    for (const c of courts) {
-        const scoreA = c.scoreA ?? 0;
-        const scoreB = c.scoreB ?? 0;
-        const res: ResultMark = scoreA > scoreB ? 'A' : 'B';
-        const winnerScore = res === 'A' ? scoreA : scoreB;
-        const loserScore = res === 'A' ? scoreB : scoreA;
-        const diff = winnerScore - loserScore;
-        const winners = res === 'A' ? c.teamA : c.teamB;
-        const losers = res === 'A' ? c.teamB : c.teamA;
-
-        winners.forEach(id => performances.push({ id, won: true, score: winnerScore, diff, rating: getPlayer(id).rating }));
-        losers.forEach(id => performances.push({ id, won: false, score: loserScore, diff: -diff, rating: getPlayer(id).rating }));
-    }
-
-    performances.sort((a, b) => {
-        if (a.won !== b.won) return a.won ? -1 : 1;
-        if (b.score !== a.score) return b.score - a.score;
-        if (b.diff !== a.diff) return b.diff - a.diff;
-        return a.rating - b.rating;
+    players.sort((a, b) => {
+        if (b.pointsWon !== a.pointsWon) return b.pointsWon - a.pointsWon;
+        const diffA = a.pointsWon - a.pointsLost;
+        const diffB = b.pointsWon - b.pointsLost;
+        if (diffB !== diffA) return diffB - diffA;
+        return b.rating - a.rating;
     });
 
+    const orderedIds = players.map(p => p.id);
     const totalCourts = courts.length;
     const next: CourtState[] = [];
     for (let i = 0; i < totalCourts; i++) {
-        const slice = performances.slice(i * 4, i * 4 + 4);
-        const ids = slice.map(p => p.id);
+        const ids = orderedIds.slice(i * 4, i * 4 + 4);
         if (ids.length < 4) {
             const prev = courts.find(k => k.court === i + 1)!;
             next.push({ court: i + 1, teamA: prev.teamA.slice(), teamB: prev.teamB.slice(), submitted: false, game: 1 });
