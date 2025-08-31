@@ -3,10 +3,7 @@ import { useTournament } from '../state/useTournament';
 
 export default function SetupPanel() {
     const {
-        maxCourts,
-        totalRounds,
         entryFee,
-        started,
         setConfig,
         startTournament,
         reset,
@@ -15,21 +12,7 @@ export default function SetupPanel() {
 
     return (
         <Stack spacing={1.5}>
-            <Typography variant="h6">Setup</Typography>
-            <TextField
-                label="Number of Courts"
-                type="number"
-                value={maxCourts}
-                disabled
-                size="small"
-            />
-            <TextField
-                label="Total Rounds"
-                type="number"
-                value={totalRounds}
-                disabled
-                size="small"
-            />
+            <Typography variant="h6">Tournament</Typography>
             <TextField
                 label="Entry Fee ($)"
                 type="number"

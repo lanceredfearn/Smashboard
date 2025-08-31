@@ -206,11 +206,14 @@ export const useTournament = create<Store>()(
                 const s = get();
                 const totalPot = s.players.length * s.entryFee;
                 const payoutPool = totalPot * 0.5;
-                const payoutPercents = [50, 30, 20];
-                const places = payoutPercents.map((pct, i) => ({
+                const count = get().requiredCourts();
+                const base = count ? Math.floor(payoutPool / count) : 0;
+                const remainder = count ? payoutPool - base * count : 0;
+                const standings = get().standings();
+                const places = Array.from({ length: count }, (_, i) => ({
                     place: i + 1,
-                    player: get().standings()[i],
-                    amount: Math.round(payoutPool * (pct / 100))
+                    player: standings[i],
+                    amount: base + (i === 0 ? remainder : 0),
                 }));
                 return { totalPot, payoutPool, places };
             }
