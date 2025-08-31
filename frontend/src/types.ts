@@ -22,7 +22,10 @@ export type CourtState = {
   court: number;
   teamA: string[];
   teamB: string[];
-  result?: ResultMark;
+  /** Points scored by team A */
+  scoreA?: number;
+  /** Points scored by team B */
+  scoreB?: number;
 };
 
 export type TournamentState = {

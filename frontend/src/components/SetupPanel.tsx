@@ -17,18 +17,17 @@ export default function SetupPanel() {
         <Stack spacing={1.5}>
             <Typography variant="h6">Setup</Typography>
             <TextField
-                label="Number of Courts (max 10)"
+                label="Number of Courts"
                 type="number"
                 value={maxCourts}
-                onChange={e => setConfig({ maxCourts: Math.max(1, Math.min(10, Number(e.target.value || 10))) })}
-                disabled={started}
+                disabled
                 size="small"
             />
             <TextField
                 label="Total Rounds"
                 type="number"
                 value={totalRounds}
-                onChange={e => setConfig({ totalRounds: Math.max(1, Math.min(50, Number(e.target.value || 8))) })}
+                disabled
                 size="small"
             />
             <TextField

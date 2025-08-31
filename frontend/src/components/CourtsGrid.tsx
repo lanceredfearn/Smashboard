@@ -1,16 +1,13 @@
 import {
     Card,
     CardContent,
-    FormControlLabel,
-    Radio,
-    RadioGroup,
     Stack,
     Typography,
+    TextField,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useMemo } from 'react';
 import { useTournament } from '../state/useTournament';
-import type { ResultMark } from '../types';
 
 export default function CourtsGrid() {
     const courts = useTournament(s => s.courts);
@@ -44,14 +41,26 @@ export default function CourtsGrid() {
                                 <Typography variant="body2">
                                     <strong>B:</strong> {formatTeam(court.teamB)}
                                 </Typography>
-                                <RadioGroup
-                                    row
-                                    value={court.result ?? ''}
-                                    onChange={(_, v) => markResult(court.court, v as ResultMark)}
-                                >
-                                    <FormControlLabel value="A" control={<Radio />} label="A won" />
-                                    <FormControlLabel value="B" control={<Radio />} label="B won" />
-                                </RadioGroup>
+                                <Stack direction="row" spacing={1}>
+                                    <TextField
+                                        label="A"
+                                        type="number"
+                                        size="small"
+                                        value={court.scoreA ?? ''}
+                                        onChange={e => markResult(court.court, { scoreA: e.target.value === '' ? undefined : Number(e.target.value) })}
+                                        inputProps={{ min: 0 }}
+                                        sx={{ width: 60 }}
+                                    />
+                                    <TextField
+                                        label="B"
+                                        type="number"
+                                        size="small"
+                                        value={court.scoreB ?? ''}
+                                        onChange={e => markResult(court.court, { scoreB: e.target.value === '' ? undefined : Number(e.target.value) })}
+                                        inputProps={{ min: 0 }}
+                                        sx={{ width: 60 }}
+                                    />
+                                </Stack>
                             </Stack>
                         </CardContent>
                     </Card>
