@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CourtState, Player, ResultMark, TournamentState } from '../types';
-import { seedInitialCourts, moveAndReform } from '../utils/rotation';
+import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '../utils/rotation';
 
 const generateId = () =>
     (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+
+const GAMES_PER_ROUND = 3;
 
 type Store = TournamentState & {
     addPlayer: (name: string, rating: number) => void;
@@ -15,8 +17,6 @@ type Store = TournamentState & {
     startTournament: () => void;
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
     submitCourt: (court: number) => void;
-    clearRoundResults: () => void;
-    nextGame: () => void;
     standings: () => Player[];
     payouts: () => { totalPot: number; payoutPool: number; places: Array<{ place: number; player?: Player; amount: number }> };
     canStart: () => boolean;
@@ -30,7 +30,6 @@ export const useTournament = create<Store>()(
             players: [],
             courts: [],
             round: 0,
-            game: 0,
             totalRounds: 3,
             entryFee: 30,
             started: false,
@@ -68,7 +67,6 @@ export const useTournament = create<Store>()(
                 players: [],
                 courts: [],
                 round: 0,
-                game: 0,
                 totalRounds: 3,
                 entryFee: 30,
                 started: false,
@@ -109,7 +107,7 @@ export const useTournament = create<Store>()(
                     const courts = get().requiredCourts();
                     if (courts < 1 || s.players.length % 4 !== 0) return s;
                     const grid = seedInitialCourts(s.players, courts);
-                    return { ...s, courts: grid, started: true, round: 1, game: 1 };
+                    return { ...s, courts: grid, started: true, round: 1 };
                 }),
 
             markCourtResult: (court, scores) =>
@@ -118,38 +116,24 @@ export const useTournament = create<Store>()(
                     return { ...s, courts };
                 }),
 
-            submitCourt: (court) =>
+            submitCourt: (courtNumber) => {
+                const gp = get().getPlayer;
                 set((s) => {
                     const courts = s.courts.map(c => {
-                        if (c.court !== court) return c;
+                        if (c.court !== courtNumber) return c;
                         const valid =
                             c.scoreA !== undefined &&
                             c.scoreB !== undefined &&
                             ((c.scoreA >= 11 || c.scoreB >= 11) && Math.abs(c.scoreA - c.scoreB) >= 2);
-                        return valid ? { ...c, submitted: true } : c;
-                    });
-                    return { ...s, courts };
-                }),
+                        if (!valid) return c;
 
-            clearRoundResults: () =>
-                set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined, submitted: false })) })),
-
-            nextGame: () =>
-                set((s) => {
-                    if (!s.started) return s;
-                    const valid = s.courts.every(c => c.submitted);
-                    if (!valid) return s;
-
-                    // Update stats and payouts
-                    for (const court of s.courts) {
-                        const scoreA = court.scoreA!;
-                        const scoreB = court.scoreB!;
+                        const scoreA = c.scoreA!;
+                        const scoreB = c.scoreB!;
                         const res: ResultMark = scoreA > scoreB ? 'A' : 'B';
-                        const a = court.teamA.map(get().getPlayer);
-                        const b = court.teamB.map(get().getPlayer);
-
-                        const winners = res === 'A' ? a : b;
-                        const losers = res === 'A' ? b : a;
+                        const aPlayers = c.teamA.map(gp);
+                        const bPlayers = c.teamB.map(gp);
+                        const winners = res === 'A' ? aPlayers : bPlayers;
+                        const losers = res === 'A' ? bPlayers : aPlayers;
                         const winnerScore = res === 'A' ? scoreA : scoreB;
                         const loserScore = res === 'A' ? scoreB : scoreA;
 
@@ -158,59 +142,70 @@ export const useTournament = create<Store>()(
                             p.wins++;
                             p.pointsWon += winnerScore;
                             p.pointsLost += loserScore;
-                            p.history.push({ round: s.round, court: court.court, team: res, result: 'W' });
+                            p.history.push({ round: s.round, court: c.court, team: res, result: 'W' });
                         });
                         losers.forEach(p => {
                             p.losses++;
                             p.pointsWon += loserScore;
                             p.pointsLost += winnerScore;
-                            p.history.push({ round: s.round, court: court.court, team: res === 'A' ? 'B' : 'A', result: 'L' });
+                            p.history.push({ round: s.round, court: c.court, team: res === 'A' ? 'B' : 'A', result: 'L' });
                         });
 
-                        if (court.court === 1) {
+                        if (c.court === 1) {
                             winners.forEach(p => p.court1Finishes++);
                         }
 
-                        // determine best player for payout
-                        const bestPlayer = court.court === 1
+                        const bestPlayer = c.court === 1
                             ? get().players.reduce((best, cur) => (cur.rating > best.rating ? cur : best), get().players[0])
-                            : [...a, ...b].reduce((best, cur) => (cur.rating > best.rating ? cur : best));
+                            : [...aPlayers, ...bPlayers].reduce((best, cur) => (cur.rating > best.rating ? cur : best));
 
                         winners.forEach(p => { p.balance -= 1; });
                         bestPlayer.balance += winners.length;
 
-                        // track last partners
-                        const [a0, a1] = court.teamA;
-                        const [b0, b1] = court.teamB;
-                        const pa0 = get().getPlayer(a0); pa0.lastPartnerId = a1;
-                        const pa1 = get().getPlayer(a1); pa1.lastPartnerId = a0;
-                        const pb0 = get().getPlayer(b0); pb0.lastPartnerId = b1;
-                        const pb1 = get().getPlayer(b1); pb1.lastPartnerId = b0;
-                    }
+                        const [a0, a1] = c.teamA;
+                        const [b0, b1] = c.teamB;
+                        const pa0 = gp(a0); pa0.lastPartnerId = a1;
+                        const pa1 = gp(a1); pa1.lastPartnerId = a0;
+                        const pb0 = gp(b0); pb0.lastPartnerId = b1;
+                        const pb1 = gp(b1); pb1.lastPartnerId = b0;
 
-                    let game = s.game + 1;
-                    let round = s.round;
-                    let started = s.started;
-                    if (game > 3) {
-                        game = 1;
-                        round += 1;
+                        if (c.game < GAMES_PER_ROUND) {
+                            const participants = [...c.teamA, ...c.teamB];
+                            const { A, B } = formTeamsAvoidingRepeat(participants, gp);
+                            return { court: c.court, teamA: A, teamB: B, submitted: false, game: c.game + 1 };
+                        }
+
+                        return { ...c, submitted: true };
+                    });
+
+                    // Check if round is complete across all courts
+                    const roundDone = courts.every(c => c.submitted && c.game === GAMES_PER_ROUND);
+                    if (roundDone) {
+                        let round = s.round + 1;
+                        let started = s.started;
+                        let nextCourts: CourtState[] = courts;
                         if (round > s.totalRounds) {
                             round = s.totalRounds;
                             started = false;
+                        } else {
+                            nextCourts = moveAndReform(courts, gp).map(c => ({ ...c, game: 1 }));
                         }
+                        return {
+                            ...s,
+                            courts: nextCourts.map(c => ({
+                                ...c,
+                                scoreA: undefined,
+                                scoreB: undefined,
+                                submitted: false,
+                            })),
+                            round,
+                            started,
+                        };
                     }
 
-                    const final = !started;
-                    const nextCourts = final ? s.courts : moveAndReform(s.courts, get().getPlayer);
-
-                    return {
-                        ...s,
-                        courts: nextCourts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined, submitted: false })),
-                        round,
-                        game,
-                        started,
-                    };
-                }),
+                    return { ...s, courts };
+                });
+            },
 
             standings: () => {
                 const s = get();

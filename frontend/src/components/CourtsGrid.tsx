@@ -39,7 +39,7 @@ export default function CourtsGrid() {
                     <Card variant="outlined">
                         <CardContent>
                             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                                Court {court.court}
+                                Court {court.court} – Game {court.game}
                             </Typography>
                             <Stack spacing={1}>
                                 <Typography variant="body2">

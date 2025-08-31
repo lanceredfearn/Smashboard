@@ -19,7 +19,7 @@ export function seedInitialCourts(players: Player[], courts: number): CourtState
         if (ids.length < 4) break;
         const teamA = [ids[0], ids[3]];
         const teamB = [ids[1], ids[2]];
-        grid.push({ court: c, teamA, teamB, submitted: false });
+        grid.push({ court: c, teamA, teamB, submitted: false, game: 1 });
     }
     return grid;
 }
@@ -81,11 +81,11 @@ export function moveAndReform(
         const ids = arrivals[c] ?? [];
         if (ids.length !== 4) {
             const prev = courts.find(k => k.court === c)!;
-            next.push({ court: c, teamA: prev.teamA.slice(), teamB: prev.teamB.slice(), submitted: false });
+            next.push({ court: c, teamA: prev.teamA.slice(), teamB: prev.teamB.slice(), submitted: false, game: 1 });
             continue;
         }
         const { A, B } = formTeamsAvoidingRepeat(ids, getPlayer);
-        next.push({ court: c, teamA: A, teamB: B, submitted: false });
+        next.push({ court: c, teamA: A, teamB: B, submitted: false, game: 1 });
     }
     return next;
 }

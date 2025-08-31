@@ -34,15 +34,14 @@ const words = [
 ]
 
 export default function App() {
-    const {started, round, game, totalRounds} = useTournament(s => ({
+    const { started, round, totalRounds } = useTournament(s => ({
         started: s.started,
         round: s.round,
-        game: s.game,
         totalRounds: s.totalRounds,
     }));
 
     const standingsLabel = started
-        ? `– Round ${round}, Game ${game}`
+        ? `– Round ${round}`
         : round >= totalRounds && round > 0
             ? '– Final Results'
             : '';
