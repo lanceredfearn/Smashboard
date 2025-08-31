@@ -26,6 +26,7 @@ public class DatabaseSeeder {
             Player player = new Player();
             player.setId(member.get("id").toString());
             player.setName((String) member.get("fullName"));
+            player.setDuprId((String) member.get("duprId"));
 
             // Default rating
             double rating = 3.5d;

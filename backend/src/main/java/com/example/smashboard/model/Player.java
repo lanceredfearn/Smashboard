@@ -11,17 +11,19 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long internalId; // DB primary key
 
-    private String id;       // DUPR API ID
+    private String id;
+    private String duprId;
     private String name;
     private Double rating;
 
     public Player() {
     }
 
-    public Player(String id, String name, Double rating) {
+    public Player(String id, String name, Double rating, String duprId) {
         this.id = id;
         this.name = name;
         this.rating = rating;
+        this.duprId = duprId;
     }
 
     // getters & setters
@@ -55,5 +57,13 @@ public class Player {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    public String getDuprId() {
+        return duprId;
+    }
+
+    public void setDuprId(String duprId) {
+        this.duprId = duprId;
     }
 }
