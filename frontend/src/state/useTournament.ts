@@ -17,17 +17,15 @@ type Store = TournamentState & {
     clearRoundResults: () => void;
     nextRound: () => void;
     standings: () => Player[];
-    payouts: () => { totalPot: number; places: Array<{ place: number; player?: Player; amount: number }> };
+    payouts: () => { totalPot: number; payoutPool: number; places: Array<{ place: number; player?: Player; amount: number }> };
     canStart: () => boolean;
     requiredCourts: () => number;
     getPlayer: (id: string) => Player;
 };
 
-const normalizePayoutSplit = (arr: number[]) => {
+const sanitizePayoutSplit = (arr: number[]) => {
     const positive = arr.filter(n => n > 0);
-    const sum = positive.reduce((a, b) => a + b, 0);
-    if (!sum) return [50, 30, 20];
-    return positive.map(n => (n / sum) * 100);
+    return positive.length ? positive : [30, 20, 10];
 };
 
 export const useTournament = create<Store>()(
@@ -38,7 +36,7 @@ export const useTournament = create<Store>()(
             round: 0,
             totalRounds: 8,
             entryFee: 30,
-            payoutPercents: [50, 30, 20],
+            payoutPercents: [30, 20, 10],
             started: false,
             maxCourts: 10,
 
@@ -73,7 +71,7 @@ export const useTournament = create<Store>()(
                 round: 0,
                 totalRounds: 8,
                 entryFee: 30,
-                payoutPercents: [50, 30, 20],
+                payoutPercents: [30, 20, 10],
                 started: false,
                 maxCourts: 10
             })),
@@ -83,7 +81,7 @@ export const useTournament = create<Store>()(
                     ...s,
                     ...cfg,
                     payoutPercents: cfg.payoutPercents
-                        ? normalizePayoutSplit(cfg.payoutPercents)
+                        ? sanitizePayoutSplit(cfg.payoutPercents)
                         : s.payoutPercents,
                 })),
 
@@ -185,12 +183,14 @@ export const useTournament = create<Store>()(
             payouts: () => {
                 const s = get();
                 const totalPot = s.players.length * s.entryFee;
+                const payoutPool = totalPot * 0.5;
+                const sum = s.payoutPercents.reduce((a, b) => a + b, 0) || 1;
                 const places = s.payoutPercents.map((pct, i) => ({
                     place: i + 1,
                     player: get().standings()[i],
-                    amount: Math.round(totalPot * (pct / 100))
+                    amount: Math.round(payoutPool * (pct / sum))
                 }));
-                return { totalPot, places };
+                return { totalPot, payoutPool, places };
             }
         }),
         { name: 'kotc10' }

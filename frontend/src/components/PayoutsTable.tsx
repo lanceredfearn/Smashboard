@@ -7,7 +7,8 @@ export default function PayoutsTable() {
     const entryFee = useTournament(s => s.entryFee);
     const playerCount = useTournament(s => s.players.length);
     const payoutSplit = useTournament(s => s.payoutPercents);
-    const { totalPot, places } = useTournament(s => s.payouts());
+    const { totalPot, payoutPool, places } = useTournament(s => s.payouts());
+    const poolPercent = totalPot ? Math.round((payoutPool / totalPot) * 100) : 0;
 
     if (!playerCount) return null;
 
@@ -16,7 +17,8 @@ export default function PayoutsTable() {
             <Typography variant="h6">Payouts</Typography>
             <Typography variant="body2" color="text.secondary">
                 {playerCount} players × ${entryFee} entry ={' '}
-                <strong>{formatCurrency(totalPot)}</strong> | Split:{' '}
+                <strong>{formatCurrency(totalPot)}</strong> | Payout pool ({poolPercent}%):{' '}
+                <strong>{formatCurrency(payoutPool)}</strong> | Split:{' '}
                 {payoutSplit.map(p => Math.round(p)).join('% / ')}%
             </Typography>
             <Table size="small">

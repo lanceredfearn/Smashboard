@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/players")
+@CrossOrigin
 public class PlayerController {
     private final PlayerService playerService;
 
@@ -18,6 +19,11 @@ public class PlayerController {
     @GetMapping
     public List<Player> getAll() {
         return playerService.getAllPlayers();
+    }
+
+    @GetMapping("/search")
+    public List<Player> searchByName(@RequestParam("q") String query) {
+        return playerService.searchPlayersByName(query);
     }
 
     @PostMapping
