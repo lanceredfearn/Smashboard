@@ -61,31 +61,40 @@ export function moveAndReform(
     courts: CourtState[],
     getPlayer: (id: string) => Player
 ): CourtState[] {
-    const top = courts.length;
-    const arrivals: Record<number, string[]> = {};
+    const performances: Array<{ id: string; won: boolean; score: number; diff: number }> = [];
 
     for (const c of courts) {
-        const res: ResultMark = (c.scoreA ?? 0) > (c.scoreB ?? 0) ? 'A' : 'B';
+        const scoreA = c.scoreA ?? 0;
+        const scoreB = c.scoreB ?? 0;
+        const res: ResultMark = scoreA > scoreB ? 'A' : 'B';
+        const winnerScore = res === 'A' ? scoreA : scoreB;
+        const loserScore = res === 'A' ? scoreB : scoreA;
+        const diff = winnerScore - loserScore;
         const winners = res === 'A' ? c.teamA : c.teamB;
         const losers = res === 'A' ? c.teamB : c.teamA;
 
-        const winTarget = c.court === 1 ? 1 : c.court - 1;
-        const loseTarget = c.court === top ? top : c.court + 1;
-
-        arrivals[winTarget] = (arrivals[winTarget] ?? []).concat(winners);
-        arrivals[loseTarget] = (arrivals[loseTarget] ?? []).concat(losers);
+        winners.forEach(id => performances.push({ id, won: true, score: winnerScore, diff }));
+        losers.forEach(id => performances.push({ id, won: false, score: loserScore, diff: -diff }));
     }
 
+    performances.sort((a, b) => {
+        if (a.won !== b.won) return a.won ? -1 : 1;
+        if (b.score !== a.score) return b.score - a.score;
+        return b.diff - a.diff;
+    });
+
+    const totalCourts = courts.length;
     const next: CourtState[] = [];
-    for (let c = 1; c <= top; c++) {
-        const ids = arrivals[c] ?? [];
-        if (ids.length !== 4) {
-            const prev = courts.find(k => k.court === c)!;
-            next.push({ court: c, teamA: prev.teamA.slice(), teamB: prev.teamB.slice(), submitted: false, game: 1 });
+    for (let i = 0; i < totalCourts; i++) {
+        const slice = performances.slice(i * 4, i * 4 + 4);
+        const ids = slice.map(p => p.id);
+        if (ids.length < 4) {
+            const prev = courts.find(k => k.court === i + 1)!;
+            next.push({ court: i + 1, teamA: prev.teamA.slice(), teamB: prev.teamB.slice(), submitted: false, game: 1 });
             continue;
         }
         const { A, B } = formTeamsAvoidingRepeat(ids, getPlayer);
-        next.push({ court: c, teamA: A, teamB: B, submitted: false, game: 1 });
+        next.push({ court: i + 1, teamA: A, teamB: B, submitted: false, game: 1 });
     }
     return next;
 }
