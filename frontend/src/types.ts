@@ -40,3 +40,14 @@ export type TournamentState = {
   started: boolean;
   maxCourts: number;
 };
+
+export type CourtPayout = {
+  /** Court number for the prize */
+  court: number;
+  /** Display name of the prize */
+  crown: string;
+  /** Winning player for the court */
+  player?: Player;
+  /** Total payout amount */
+  amount: number;
+};
