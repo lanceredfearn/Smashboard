@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import {CssBaseline, ThemeProvider} from '@mui/material';
 import theme from './theme';
 import "../index.css";
+import {Vortex} from "@/components/ui/vortex";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <ThemeProvider theme={theme}>
+            <CssBaseline/>
+            <Vortex>
+                <App />
+            </Vortex>
+        </ThemeProvider>
+    </React.StrictMode>
 );

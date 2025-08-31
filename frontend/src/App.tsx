@@ -12,7 +12,6 @@ import '../index.css'
 
 "use client";
 import {TypewriterEffectSmooth} from "./components/ui/typewriter-effect";
-import {Vortex} from "@/components/ui/vortex";
 
 const words = [
     {
@@ -47,53 +46,50 @@ export default function App() {
             : '';
 
     return (
-            <Vortex
-                backgroundColor="black"
-                className="flex items-center flex-col justify-center px-2 md:px-10 py-4 w-full h-full"
-            >
-                <Stack spacing={2} sx={{mb: 2}}>
-                    <div style={{alignSelf: 'center'}}>
-                        <TypewriterEffectSmooth words={words}/>
-                    </div>
-                    <Typography variant="body2" color="text.secondary">
-                        Winner-up / loser-down (Ct 1 winners & top-court losers stay). Partner
-                        mixing reduces repeat partners. Data persists in your browser.
-                    </Typography>
-                </Stack>
+        <>
+            <Stack spacing={2} sx={{mb: 6}}>
+                <div style={{alignSelf: 'center'}}>
+                    <TypewriterEffectSmooth words={words}/>
+                </div>
+                <Typography style={{alignSelf: 'center'}} variant="body2" color="text.secondary">
+                    Winner-up / loser-down (Ct 1 winners & top-court losers stay). Partner
+                    mixing reduces repeat partners. Data persists in your browser.
+                </Typography>
+            </Stack>
 
-                <Grid container spacing={2}>
-                    <Grid xs={12} md={4}>
-                        <Panel>
-                            <SetupPanel/>
-                        </Panel>
-                        <Panel sx={{mt: 2}}>
-                            <PlayerList/>
-                        </Panel>
-                    </Grid>
-
-                    <Grid xs={12} md={8}>
-                        <Panel>
-                            <RoundControls/>
-                            {!started && (
-                                <Typography mt={2} color="text.secondary">
-                                    Add 12-40 players (multiple of 4), set rounds, then Start Tournament.
-                                </Typography>
-                            )}
-                            <CourtsGrid/>
-                        </Panel>
-
-                        <Panel sx={{mt: 2}}>
-                            <Typography variant="h6" gutterBottom>
-                                Standings {standingsLabel}
-                            </Typography>
-                            <StandingsTable/>
-                        </Panel>
-
-                        <Panel sx={{mt: 2}}>
-                            <PayoutsTable/>
-                        </Panel>
-                    </Grid>
+            <Grid container spacing={2}>
+                <Grid padding={5} xs={12} md={4}>
+                    <Panel>
+                        <SetupPanel/>
+                    </Panel>
+                    <Panel sx={{mt: 2}}>
+                        <PlayerList/>
+                    </Panel>
                 </Grid>
-            </Vortex>
+
+                <Grid padding={5} xs={12} md={8}>
+                    <Panel>
+                        <RoundControls/>
+                        {!started && (
+                            <Typography mt={2} color="text.secondary">
+                                Add 12-40 players (multiple of 4), set rounds, then Start Tournament.
+                            </Typography>
+                        )}
+                        <CourtsGrid/>
+                    </Panel>
+
+                    <Panel sx={{mt: 2}}>
+                        <Typography variant="h6" gutterBottom>
+                            Standings {standingsLabel}
+                        </Typography>
+                        <StandingsTable/>
+                    </Panel>
+
+                    <Panel sx={{mt: 2}}>
+                        <PayoutsTable/>
+                    </Panel>
+                </Grid>
+            </Grid>
+        </>
     );
 }

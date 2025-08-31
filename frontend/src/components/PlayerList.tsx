@@ -44,7 +44,7 @@ export default function PlayerList() {
     };
 
     return (
-        <Stack spacing={1.5}>
+        <Stack spacing={3.0}>
             <Typography variant="h6">Players ({players.length})</Typography>
             <Stack direction="row" spacing={1}>
                 <TextField
@@ -74,15 +74,15 @@ export default function PlayerList() {
             <Typography variant="body2" color="text.secondary">Count must be 12-40 and a multiple of 4 to start.</Typography>
             <Divider />
             <List dense sx={{ maxHeight: 280, overflow: 'auto' }}>
-                {players.map(p => (
-                    <ListItem key={p.id} secondaryAction={
+                {players.map(player => (
+                    <ListItem key={player.id} secondaryAction={
                         <ListItemSecondaryAction>
-                            <IconButton edge="end" onClick={() => remove(p.id)} disabled={started}>
+                            <IconButton edge="end" onClick={() => remove(player.id)} disabled={started}>
                                 <DeleteIcon />
                             </IconButton>
                         </ListItemSecondaryAction>
                     }>
-                        <ListItemText primary={`${p.name} (${p.rating})`} />
+                        <ListItemText primary={`${player.name} (${player.rating})`} />
                     </ListItem>
                 ))}
             </List>

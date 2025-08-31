@@ -1,6 +1,6 @@
 import { Button, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { useTournament } from '../state/useTournament';
-import { exportCSV } from '../utils/csv';
+import { useTournament } from '@/state/useTournament';
+import { exportCSV } from '@/utils/csv';
 
 export default function StandingsTable() {
     const standingsList = useTournament(s => s.standings());
@@ -10,14 +10,14 @@ export default function StandingsTable() {
 
     const exportStandings = () => {
         const rows: string[][] = [
-            ['Rank', 'Player', 'Points', 'W', 'L', 'Court1 Finishes'],
-            ...standingsList.map((p, i) => [
+            ['Rank', 'Player', 'Points', 'Wins', 'Losses', 'Court1 Finishes'],
+            ...standingsList.map((player, i) => [
                 String(i + 1),
-                p.name,
-                String(p.points),
-                String(p.wins),
-                String(p.losses),
-                String(p.court1Finishes),
+                player.name,
+                String(player.points),
+                String(player.wins),
+                String(player.losses),
+                String(player.court1Finishes),
             ]),
         ];
         exportCSV('standings.csv', rows);
@@ -31,20 +31,20 @@ export default function StandingsTable() {
                         <TableCell>#</TableCell>
                         <TableCell>Player</TableCell>
                         <TableCell>Pts</TableCell>
-                        <TableCell>W</TableCell>
-                        <TableCell>L</TableCell>
+                        <TableCell>Wins</TableCell>
+                        <TableCell>Losses</TableCell>
                         <TableCell>Ct1</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {standingsList.map((p, i) => (
-                        <TableRow key={p.id}>
+                    {standingsList.map((player, i) => (
+                        <TableRow key={player.id}>
                             <TableCell>{i + 1}</TableCell>
-                            <TableCell>{p.name}</TableCell>
-                            <TableCell>{p.points}</TableCell>
-                            <TableCell>{p.wins}</TableCell>
-                            <TableCell>{p.losses}</TableCell>
-                            <TableCell>{p.court1Finishes}</TableCell>
+                            <TableCell>{player.name}</TableCell>
+                            <TableCell>{player.points}</TableCell>
+                            <TableCell>{player.wins}</TableCell>
+                            <TableCell>{player.losses}</TableCell>
+                            <TableCell>{player.court1Finishes}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
