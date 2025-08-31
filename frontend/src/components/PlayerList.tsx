@@ -81,6 +81,8 @@ export default function PlayerList() {
                         />
                     )}
                     disabled={started}
+                    fullWidth
+                    sx={{ flexGrow: 1 }}
                 />
                 <TextField
                     label="DUPR"

@@ -11,7 +11,7 @@ type Store = TournamentState & {
     removePlayer: (id: string) => void;
     reset: () => void;
     setConfig: (cfg: Partial<Pick<TournamentState,
-        'maxCourts' | 'totalRounds' | 'entryFee' | 'payoutPercents'>>) => void;
+        'maxCourts' | 'totalRounds' | 'entryFee'>>) => void;
     startTournament: () => void;
     markCourtResult: (court: number, result: ResultMark) => void;
     clearRoundResults: () => void;
@@ -23,11 +23,6 @@ type Store = TournamentState & {
     getPlayer: (id: string) => Player;
 };
 
-const sanitizePayoutSplit = (arr: number[]) => {
-    const positive = arr.filter(n => n > 0);
-    return positive.length ? positive : [30, 20, 10];
-};
-
 export const useTournament = create<Store>()(
     persist(
         (set, get) => ({
@@ -36,7 +31,6 @@ export const useTournament = create<Store>()(
             round: 0,
             totalRounds: 8,
             entryFee: 30,
-            payoutPercents: [30, 20, 10],
             started: false,
             maxCourts: 10,
 
@@ -71,7 +65,6 @@ export const useTournament = create<Store>()(
                 round: 0,
                 totalRounds: 8,
                 entryFee: 30,
-                payoutPercents: [30, 20, 10],
                 started: false,
                 maxCourts: 10
             })),
@@ -80,9 +73,6 @@ export const useTournament = create<Store>()(
                 set(s => ({
                     ...s,
                     ...cfg,
-                    payoutPercents: cfg.payoutPercents
-                        ? sanitizePayoutSplit(cfg.payoutPercents)
-                        : s.payoutPercents,
                 })),
 
             requiredCourts: () => {
@@ -184,11 +174,11 @@ export const useTournament = create<Store>()(
                 const s = get();
                 const totalPot = s.players.length * s.entryFee;
                 const payoutPool = totalPot * 0.5;
-                const sum = s.payoutPercents.reduce((a, b) => a + b, 0) || 1;
-                const places = s.payoutPercents.map((pct, i) => ({
+                const payoutPercents = [50, 30, 20];
+                const places = payoutPercents.map((pct, i) => ({
                     place: i + 1,
                     player: get().standings()[i],
-                    amount: Math.round(payoutPool * (pct / sum))
+                    amount: Math.round(payoutPool * (pct / 100))
                 }));
                 return { totalPot, payoutPool, places };
             }
