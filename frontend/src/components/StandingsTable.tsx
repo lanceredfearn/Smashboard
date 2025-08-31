@@ -10,13 +10,10 @@ export default function StandingsTable() {
 
     const exportStandings = () => {
         const rows: string[][] = [
-            ['Rank', 'Player', 'Points', 'Wins', 'Losses', 'Pts Won', 'Pts Lost', 'Diff', 'Balance'],
+            ['Rank', 'Player', 'Pts Won', 'Pts Lost', 'Diff', 'Balance'],
             ...standingsList.map((player, i) => [
                 String(i + 1),
                 player.name,
-                String(player.points),
-                String(player.wins),
-                String(player.losses),
                 String(player.pointsWon),
                 String(player.pointsLost),
                 String(player.pointsWon - player.pointsLost),
@@ -33,9 +30,6 @@ export default function StandingsTable() {
                     <TableRow>
                         <TableCell>#</TableCell>
                         <TableCell>Player</TableCell>
-                        <TableCell>Pts</TableCell>
-                        <TableCell>Wins</TableCell>
-                        <TableCell>Losses</TableCell>
                         <TableCell>Pts Won</TableCell>
                         <TableCell>Pts Lost</TableCell>
                         <TableCell>Diff</TableCell>
@@ -47,9 +41,6 @@ export default function StandingsTable() {
                         <TableRow key={player.id}>
                             <TableCell>{i + 1}</TableCell>
                             <TableCell>{player.name}</TableCell>
-                            <TableCell>{player.points}</TableCell>
-                            <TableCell>{player.wins}</TableCell>
-                            <TableCell>{player.losses}</TableCell>
                             <TableCell>{player.pointsWon}</TableCell>
                             <TableCell>{player.pointsLost}</TableCell>
                             <TableCell>{player.pointsWon - player.pointsLost}</TableCell>

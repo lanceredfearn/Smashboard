@@ -3,10 +3,7 @@ export type ResultMark = 'A' | 'B';
 export type Player = {
   id: string;
   name: string;
-  points: number;
-  wins: number;
-  losses: number;
-  /** Total points earned from wins */
+  /** Total points scored by the player */
   pointsWon: number;
   /** Total points opponents earned against the player */
   pointsLost: number;
