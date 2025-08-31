@@ -9,11 +9,7 @@ export default function RoundControls() {
     const courts = useTournament(s => s.courts);
     const nextGame = useTournament(s => s.nextGame);
 
-    const allResultsSubmitted = courts.length > 0 && courts.every(c =>
-        c.scoreA !== undefined &&
-        c.scoreB !== undefined &&
-        ((c.scoreA >= 11 || c.scoreB >= 11) && Math.abs(c.scoreA - c.scoreB) >= 2)
-    );
+    const allResultsSubmitted = courts.length > 0 && courts.every(c => c.submitted);
     const statusLabel = started
         ? `Round ${round} – Game ${game}`
         : round >= totalRounds && round > 0
