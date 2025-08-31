@@ -32,7 +32,7 @@ export const useTournament = create<Store>()(
             totalRounds: 3,
             entryFee: 30,
             started: false,
-            maxCourts: 3,
+            maxCourts: 10,
 
             addPlayer: (name, rating) =>
                 set((s) => {
@@ -69,7 +69,7 @@ export const useTournament = create<Store>()(
                 totalRounds: 3,
                 entryFee: 30,
                 started: false,
-                maxCourts: 3
+                maxCourts: 10
             })),
 
             setConfig: cfg =>
@@ -85,12 +85,12 @@ export const useTournament = create<Store>()(
 
             canStart: () => {
                 const s = get();
+                const count = s.players.length;
                 return (
                     !s.started &&
-                    s.players.length === 12 &&
-                    s.players.length % 4 === 0 &&
-                    get().requiredCourts() === 3 &&
-                    s.totalRounds === 3
+                    count >= 12 &&
+                    count <= 40 &&
+                    count % 4 === 0
                 );
             },
 
