@@ -44,20 +44,18 @@ export default function CourtsGrid() {
                                 <Stack direction="row" spacing={1}>
                                     <TextField
                                         label="A"
-                                        type="number"
                                         size="small"
                                         value={court.scoreA ?? ''}
                                         onChange={e => markResult(court.court, { scoreA: e.target.value === '' ? undefined : Number(e.target.value) })}
-                                        inputProps={{ min: 0 }}
+                                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                                         sx={{ width: 60 }}
                                     />
                                     <TextField
                                         label="B"
-                                        type="number"
                                         size="small"
                                         value={court.scoreB ?? ''}
                                         onChange={e => markResult(court.court, { scoreB: e.target.value === '' ? undefined : Number(e.target.value) })}
-                                        inputProps={{ min: 0 }}
+                                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                                         sx={{ width: 60 }}
                                     />
                                 </Stack>
