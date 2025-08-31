@@ -45,6 +45,9 @@ export const useTournament = create<Store>()(
                         points: 0,
                         wins: 0,
                         losses: 0,
+                        pointsWon: 0,
+                        pointsLost: 0,
+                        balance: 0,
                         rating,
                         court1Finishes: 0,
                         lastPartnerId: null,
@@ -120,23 +123,38 @@ export const useTournament = create<Store>()(
                     if (!s.started) return s;
                     if (!s.courts.every(c => c.result)) return s;
 
-                    // Update stats
+                    // Update stats and payouts
                     for (const court of s.courts) {
                         const res = court.result as ResultMark;
                         const a = court.teamA.map(get().getPlayer);
                         const b = court.teamB.map(get().getPlayer);
 
-                        if (res === 'A') {
-                            a.forEach(p => { p.points += 2; p.wins++; p.history.push({ round: s.round, court: court.court, team: 'A', result: 'W' }) });
-                            b.forEach(p => { p.losses++; p.history.push({ round: s.round, court: court.court, team: 'B', result: 'L' }) });
-                        } else {
-                            b.forEach(p => { p.points += 2; p.wins++; p.history.push({ round: s.round, court: court.court, team: 'B', result: 'W' }) });
-                            a.forEach(p => { p.losses++; p.history.push({ round: s.round, court: court.court, team: 'A', result: 'L' }) });
-                        }
+                        const winners = res === 'A' ? a : b;
+                        const losers = res === 'A' ? b : a;
+
+                        winners.forEach(p => {
+                            p.points += 2;
+                            p.wins++;
+                            p.pointsWon += 2;
+                            p.history.push({ round: s.round, court: court.court, team: res, result: 'W' });
+                        });
+                        losers.forEach(p => {
+                            p.losses++;
+                            p.pointsLost += 2;
+                            p.history.push({ round: s.round, court: court.court, team: res === 'A' ? 'B' : 'A', result: 'L' });
+                        });
+
                         if (court.court === 1) {
-                            const winners = res === 'A' ? a : b;
                             winners.forEach(p => p.court1Finishes++);
                         }
+
+                        // determine best player for payout
+                        const bestPlayer = court.court === 1
+                            ? get().players.reduce((best, cur) => (cur.rating > best.rating ? cur : best), get().players[0])
+                            : [...a, ...b].reduce((best, cur) => (cur.rating > best.rating ? cur : best));
+
+                        winners.forEach(p => { p.balance -= 1; });
+                        bestPlayer.balance += winners.length;
 
                         // track last partners
                         const [a0, a1] = court.teamA;
