@@ -26,6 +26,8 @@ export type CourtState = {
   scoreA?: number;
   /** Points scored by team B */
   scoreB?: number;
+  /** Whether this court's result has been submitted */
+  submitted: boolean;
 };
 
 export type TournamentState = {

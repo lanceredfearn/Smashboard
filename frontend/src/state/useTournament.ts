@@ -14,6 +14,7 @@ type Store = TournamentState & {
         'maxCourts' | 'totalRounds' | 'entryFee'>>) => void;
     startTournament: () => void;
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
+    submitCourt: (court: number) => void;
     clearRoundResults: () => void;
     nextGame: () => void;
     standings: () => Player[];
@@ -117,17 +118,26 @@ export const useTournament = create<Store>()(
                     return { ...s, courts };
                 }),
 
+            submitCourt: (court) =>
+                set((s) => {
+                    const courts = s.courts.map(c => {
+                        if (c.court !== court) return c;
+                        const valid =
+                            c.scoreA !== undefined &&
+                            c.scoreB !== undefined &&
+                            ((c.scoreA >= 11 || c.scoreB >= 11) && Math.abs(c.scoreA - c.scoreB) >= 2);
+                        return valid ? { ...c, submitted: true } : c;
+                    });
+                    return { ...s, courts };
+                }),
+
             clearRoundResults: () =>
-                set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined })) })),
+                set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined, submitted: false })) })),
 
             nextGame: () =>
                 set((s) => {
                     if (!s.started) return s;
-                    const valid = s.courts.every(c =>
-                        c.scoreA !== undefined &&
-                        c.scoreB !== undefined &&
-                        ((c.scoreA >= 11 || c.scoreB >= 11) && Math.abs(c.scoreA - c.scoreB) >= 2)
-                    );
+                    const valid = s.courts.every(c => c.submitted);
                     if (!valid) return s;
 
                     // Update stats and payouts
@@ -195,7 +205,7 @@ export const useTournament = create<Store>()(
 
                     return {
                         ...s,
-                        courts: nextCourts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined })),
+                        courts: nextCourts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined, submitted: false })),
                         round,
                         game,
                         started,
@@ -220,16 +230,31 @@ export const useTournament = create<Store>()(
             payouts: () => {
                 const s = get();
                 const totalPot = s.players.length * s.entryFee;
-                const payoutPool = totalPot * 0.5;
-                const count = get().requiredCourts();
-                const base = count ? Math.floor(payoutPool / count) : 0;
-                const remainder = count ? payoutPool - base * count : 0;
+                const groupsOverTwelve = Math.max(0, Math.floor((s.players.length - 12) / 4));
+                const houseCut = 100 + groupsOverTwelve * 25;
+                const courts = get().requiredCourts();
                 const standings = get().standings();
-                const places = Array.from({ length: count }, (_, i) => ({
-                    place: i + 1,
-                    player: standings[i],
-                    amount: base + (i === 0 ? remainder : 0),
-                }));
+
+                let pool = totalPot - houseCut;
+                // refund entry fees to all court winners
+                const refunds = courts * s.entryFee;
+                pool -= refunds;
+                if (pool < 0) pool = 0;
+
+                const weights = [0.5, 0.3, 0.2];
+                const places = Array.from({ length: courts }, (_, i) => {
+                    let extra = 0;
+                    if (i < 3) {
+                        extra = pool * weights[i];
+                    }
+                    return {
+                        place: i + 1,
+                        player: standings[i],
+                        amount: s.entryFee + extra,
+                    };
+                });
+
+                const payoutPool = places.reduce((sum, p) => sum + p.amount, 0);
                 return { totalPot, payoutPool, places };
             }
         }),
