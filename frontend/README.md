@@ -10,7 +10,7 @@ A React + TypeScript web app to run a **King-of-the-Court style pickleball tourn
 - Automatic payout calculations with customizable % split
 - Winner-up / loser-down rotation logic
 - Avoids repeat partners as much as possible
-- Standings tracked (points, wins, losses, Ct1 finishes)
+- Standings tracked (points scored, points against, Ct1 finishes)
 - CSV export of standings
 
 ## Getting Started

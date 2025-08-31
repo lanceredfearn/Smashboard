@@ -43,9 +43,6 @@ export const useTournament = create<Store>()(
                     const p: Player = {
                         id: generateId(),
                         name,
-                        points: 0,
-                        wins: 0,
-                        losses: 0,
                         pointsWon: 0,
                         pointsLost: 0,
                         balance: 0,
@@ -139,14 +136,11 @@ export const useTournament = create<Store>()(
                         const loserScore = res === 'A' ? scoreB : scoreA;
 
                         winners.forEach(p => {
-                            p.points += 2;
-                            p.wins++;
                             p.pointsWon += winnerScore;
                             p.pointsLost += loserScore;
                             p.history.push({ round: s.round, court: c.court, team: res, result: 'W' });
                         });
                         losers.forEach(p => {
-                            p.losses++;
                             p.pointsWon += loserScore;
                             p.pointsLost += winnerScore;
                             p.history.push({ round: s.round, court: c.court, team: res === 'A' ? 'B' : 'A', result: 'L' });
@@ -219,12 +213,10 @@ export const useTournament = create<Store>()(
                 const s = get();
                 const clone = s.players.slice();
                 clone.sort((a, b) => {
-                    if (b.points !== a.points) return b.points - a.points;
+                    if (b.pointsWon !== a.pointsWon) return b.pointsWon - a.pointsWon;
                     const diffA = a.pointsWon - a.pointsLost;
                     const diffB = b.pointsWon - b.pointsLost;
                     if (diffB !== diffA) return diffB - diffA;
-                    if (b.wins !== a.wins) return b.wins - a.wins;
-                    if (b.court1Finishes !== a.court1Finishes) return b.court1Finishes - a.court1Finishes;
                     return a.name.localeCompare(b.name);
                 });
                 return clone;
