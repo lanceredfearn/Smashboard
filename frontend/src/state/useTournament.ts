@@ -13,7 +13,7 @@ type Store = TournamentState & {
     setConfig: (cfg: Partial<Pick<TournamentState,
         'maxCourts' | 'totalRounds' | 'entryFee'>>) => void;
     startTournament: () => void;
-    markCourtResult: (court: number, result: ResultMark) => void;
+    markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
     clearRoundResults: () => void;
     nextRound: () => void;
     standings: () => Player[];
@@ -29,10 +29,10 @@ export const useTournament = create<Store>()(
             players: [],
             courts: [],
             round: 0,
-            totalRounds: 8,
+            totalRounds: 3,
             entryFee: 30,
             started: false,
-            maxCourts: 10,
+            maxCourts: 3,
 
             addPlayer: (name, rating) =>
                 set((s) => {
@@ -66,10 +66,10 @@ export const useTournament = create<Store>()(
                 players: [],
                 courts: [],
                 round: 0,
-                totalRounds: 8,
+                totalRounds: 3,
                 entryFee: 30,
                 started: false,
-                maxCourts: 10
+                maxCourts: 3
             })),
 
             setConfig: cfg =>
@@ -87,10 +87,10 @@ export const useTournament = create<Store>()(
                 const s = get();
                 return (
                     !s.started &&
-                    s.players.length >= 12 &&
+                    s.players.length === 12 &&
                     s.players.length % 4 === 0 &&
-                    s.players.length <= 40 &&
-                    get().requiredCourts() > 0
+                    get().requiredCourts() === 3 &&
+                    s.totalRounds === 3
                 );
             },
 
@@ -109,38 +109,49 @@ export const useTournament = create<Store>()(
                     return { ...s, courts: grid, started: true, round: 1 };
                 }),
 
-            markCourtResult: (court, result) =>
+            markCourtResult: (court, scores) =>
                 set((s) => {
-                    const courts = s.courts.map(c => (c.court === court ? { ...c, result } : c));
+                    const courts = s.courts.map(c => (c.court === court ? { ...c, ...scores } : c));
                     return { ...s, courts };
                 }),
 
             clearRoundResults: () =>
-                set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, result: undefined })) })),
+                set((s) => ({ ...s, courts: s.courts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined })) })),
 
             nextRound: () =>
                 set((s) => {
                     if (!s.started) return s;
-                    if (!s.courts.every(c => c.result)) return s;
+                    const valid = s.courts.every(c =>
+                        c.scoreA !== undefined &&
+                        c.scoreB !== undefined &&
+                        ((c.scoreA >= 11 || c.scoreB >= 11) && Math.abs(c.scoreA - c.scoreB) >= 2)
+                    );
+                    if (!valid) return s;
 
                     // Update stats and payouts
                     for (const court of s.courts) {
-                        const res = court.result as ResultMark;
+                        const scoreA = court.scoreA!;
+                        const scoreB = court.scoreB!;
+                        const res: ResultMark = scoreA > scoreB ? 'A' : 'B';
                         const a = court.teamA.map(get().getPlayer);
                         const b = court.teamB.map(get().getPlayer);
 
                         const winners = res === 'A' ? a : b;
                         const losers = res === 'A' ? b : a;
+                        const winnerScore = res === 'A' ? scoreA : scoreB;
+                        const loserScore = res === 'A' ? scoreB : scoreA;
 
                         winners.forEach(p => {
                             p.points += 2;
                             p.wins++;
-                            p.pointsWon += 2;
+                            p.pointsWon += winnerScore;
+                            p.pointsLost += loserScore;
                             p.history.push({ round: s.round, court: court.court, team: res, result: 'W' });
                         });
                         losers.forEach(p => {
                             p.losses++;
-                            p.pointsLost += 2;
+                            p.pointsWon += loserScore;
+                            p.pointsLost += winnerScore;
                             p.history.push({ round: s.round, court: court.court, team: res === 'A' ? 'B' : 'A', result: 'L' });
                         });
 
@@ -170,7 +181,7 @@ export const useTournament = create<Store>()(
 
                     return {
                         ...s,
-                        courts: nextCourts.map(c => ({ ...c, result: undefined })),
+                        courts: nextCourts.map(c => ({ ...c, scoreA: undefined, scoreB: undefined })),
                         round: final ? s.round : s.round + 1,
                         started: final ? false : s.started
                     };
@@ -181,6 +192,9 @@ export const useTournament = create<Store>()(
                 const clone = s.players.slice();
                 clone.sort((a, b) => {
                     if (b.points !== a.points) return b.points - a.points;
+                    const diffA = a.pointsWon - a.pointsLost;
+                    const diffB = b.pointsWon - b.pointsLost;
+                    if (diffB !== diffA) return diffB - diffA;
                     if (b.wins !== a.wins) return b.wins - a.wins;
                     if (b.court1Finishes !== a.court1Finishes) return b.court1Finishes - a.court1Finishes;
                     return a.name.localeCompare(b.name);

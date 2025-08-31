@@ -65,7 +65,7 @@ export function moveAndReform(
     const arrivals: Record<number, string[]> = {};
 
     for (const c of courts) {
-        const res = c.result as ResultMark;
+        const res: ResultMark = (c.scoreA ?? 0) > (c.scoreB ?? 0) ? 'A' : 'B';
         const winners = res === 'A' ? c.teamA : c.teamB;
         const losers = res === 'A' ? c.teamB : c.teamA;
 
