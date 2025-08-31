@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CourtState, Player, ResultMark, TournamentState } from '../types';
+import type { CourtState, Player, ResultMark, TournamentState, CourtPayout } from '../types';
 import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '../utils/rotation';
 
 const generateId = () =>
@@ -18,7 +18,7 @@ type Store = TournamentState & {
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
     submitCourt: (court: number) => void;
     standings: () => Player[];
-    payouts: () => { totalPot: number; payoutPool: number; places: Array<{ place: number; player?: Player; amount: number }> };
+    payouts: () => { totalPot: number; payoutPool: number; awards: CourtPayout[] };
     canStart: () => boolean;
     requiredCourts: () => number;
     getPlayer: (id: string) => Player;
@@ -228,7 +228,7 @@ export const useTournament = create<Store>()(
                 const groupsOverTwelve = Math.max(0, Math.floor((s.players.length - 12) / 4));
                 const houseCut = 100 + groupsOverTwelve * 25;
                 const courts = get().requiredCourts();
-                const standings = get().standings();
+                const gp = get().getPlayer;
 
                 let pool = totalPot - houseCut;
                 // refund entry fees to all court winners
@@ -236,21 +236,40 @@ export const useTournament = create<Store>()(
                 pool -= refunds;
                 if (pool < 0) pool = 0;
 
+                const sortPlayers = (players: Player[]) => {
+                    const clone = players.slice();
+                    clone.sort((a, b) => {
+                        if (b.pointsWon !== a.pointsWon) return b.pointsWon - a.pointsWon;
+                        const diffA = a.pointsWon - a.pointsLost;
+                        const diffB = b.pointsWon - b.pointsLost;
+                        if (diffB !== diffA) return diffB - diffA;
+                        return a.name.localeCompare(b.name);
+                    });
+                    return clone;
+                };
+
                 const weights = [0.5, 0.3, 0.2];
-                const places = Array.from({ length: courts }, (_, i) => {
+                const crowns = ["King's Crown", "Queen's Crown", "Jack's Crown"];
+                const awards: CourtPayout[] = Array.from({ length: courts }, (_, i) => {
+                    const courtNum = i + 1;
+                    const court = s.courts.find(c => c.court === courtNum);
+                    const participants = court ? [...court.teamA, ...court.teamB].map(gp) : [];
+                    const winner = sortPlayers(participants)[0];
                     let extra = 0;
                     if (i < 3) {
                         extra = pool * weights[i];
                     }
+                    const crown = i < 3 ? crowns[i] : "Jester's Crown";
                     return {
-                        place: i + 1,
-                        player: standings[i],
+                        court: courtNum,
+                        crown,
+                        player: winner,
                         amount: s.entryFee + extra,
                     };
                 });
 
-                const payoutPool = places.reduce((sum, p) => sum + p.amount, 0);
-                return { totalPot, payoutPool, places };
+                const payoutPool = awards.reduce((sum, p) => sum + p.amount, 0);
+                return { totalPot, payoutPool, awards };
             }
         }),
         { name: 'kotc10' }
