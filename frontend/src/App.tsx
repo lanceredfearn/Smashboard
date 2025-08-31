@@ -1,4 +1,4 @@
-import {Container, Stack, Typography} from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import SetupPanel from './components/SetupPanel';
 import PlayerList from './components/PlayerList';
@@ -6,13 +6,11 @@ import RoundControls from './components/RoundControls';
 import CourtsGrid from './components/CourtsGrid';
 import StandingsTable from './components/StandingsTable';
 import PayoutsTable from './components/PayoutsTable';
-import {useTournament} from './state/useTournament';
+import { useTournament } from './state/useTournament';
 import Panel from './components/Panel';
-import '../index.css'
 
 "use client";
-import {TypewriterEffectSmooth} from "./components/ui/typewriter-effect";
-import {Meteors} from "./components/ui/meteors";
+import { TypewriterEffectSmooth } from "./components/ui/typewriter-effect";
 
 const words = [
     {
@@ -47,11 +45,7 @@ export default function App() {
             : '';
 
     return (
-        <div style={{position: 'relative', minHeight: '100vh'}}>
-            <div style={{position: 'fixed', inset: 0, zIndex: -1, overflow: 'hidden'}}>
-                <Meteors number={30} />
-            </div>
-
+        <div>
             <Stack spacing={2} sx={{mb: 6}}>
                 <div style={{alignSelf: 'center'}}>
                     <TypewriterEffectSmooth words={words}/>
