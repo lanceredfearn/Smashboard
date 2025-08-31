@@ -6,6 +6,12 @@ export type Player = {
   points: number;
   wins: number;
   losses: number;
+  /** Total points earned from wins */
+  pointsWon: number;
+  /** Total points opponents earned against the player */
+  pointsLost: number;
+  /** Net payout balance for the player */
+  balance: number;
   rating: number;
   court1Finishes: number;
   lastPartnerId: string | null;
