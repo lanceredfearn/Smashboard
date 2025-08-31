@@ -25,7 +25,6 @@ export type TournamentState = {
   round: number;
   totalRounds: number;
   entryFee: number;
-  payoutPercents: number[];
   started: boolean;
   maxCourts: number;
 };

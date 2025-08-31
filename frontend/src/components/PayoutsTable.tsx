@@ -6,7 +6,6 @@ const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
 export default function PayoutsTable() {
     const entryFee = useTournament(s => s.entryFee);
     const playerCount = useTournament(s => s.players.length);
-    const payoutSplit = useTournament(s => s.payoutPercents);
     const { totalPot, payoutPool, places } = useTournament(s => s.payouts());
     const poolPercent = totalPot ? Math.round((payoutPool / totalPot) * 100) : 0;
 
@@ -18,8 +17,7 @@ export default function PayoutsTable() {
             <Typography variant="body2" color="text.secondary">
                 {playerCount} players × ${entryFee} entry ={' '}
                 <strong>{formatCurrency(totalPot)}</strong> | Payout pool ({poolPercent}%):{' '}
-                <strong>{formatCurrency(payoutPool)}</strong> | Split:{' '}
-                {payoutSplit.map(p => Math.round(p)).join('% / ')}%
+                <strong>{formatCurrency(payoutPool)}</strong>
             </Typography>
             <Table size="small">
                 <TableHead>
