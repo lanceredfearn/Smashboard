@@ -35,6 +35,10 @@ public class PlayerService {
         return playerRepository.findByName(name);
     }
 
+    public List<Player> searchPlayersByName(String name) {
+        return playerRepository.findByNameContainingIgnoreCase(name);
+    }
+
     public void deletePlayer(Long internalId) {
         playerRepository.deleteById(internalId);
     }

@@ -45,7 +45,7 @@ export default function SetupPanel() {
                 size="small"
             />
             <TextField
-                label="Payout Split (%) e.g. 50,30,20"
+                label="Payout Split (%) e.g. 30,20,10"
                 value={payoutText}
                 onChange={e => setPayoutText(e.target.value)}
                 onBlur={() => {
@@ -53,7 +53,7 @@ export default function SetupPanel() {
                         .split(',')
                         .map(s => Number(s.trim()))
                         .filter(n => !isNaN(n) && n > 0);
-                    setConfig({ payoutPercents: split.length ? split : [50, 30, 20] });
+                    setConfig({ payoutPercents: split.length ? split : [30, 20, 10] });
                 }}
                 size="small"
             />

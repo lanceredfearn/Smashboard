@@ -1,4 +1,5 @@
 import {
+    Autocomplete,
     Button,
     Divider,
     IconButton,
@@ -20,13 +21,27 @@ export default function PlayerList() {
     const remove = useTournament(s => s.removePlayer);
     const started = useTournament(s => s.started);
 
-    const [name, setName] = useState('');
-    const [rating, setRating] = useState('');
+    type DbPlayer = { name: string; rating: number };
+    const [query, setQuery] = useState('');
+    const [options, setOptions] = useState<DbPlayer[]>([]);
+    const [selected, setSelected] = useState<DbPlayer | null>(null);
+
+    useEffect(() => {
+        if (query.length < 2) {
+            setOptions([]);
+            return;
+        }
+        const controller = new AbortController();
+        fetch(`/api/players/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+            .then(res => res.json())
+            .then((data: DbPlayer[]) => setOptions(data))
+            .catch(() => {});
+        return () => controller.abort();
+    }, [query]);
 
     const handleAdd = () => {
-        const trimmedName = name.trim();
-        const numericRating = Number(rating);
-        if (!trimmedName || isNaN(numericRating)) return;
+        if (!selected) return;
+        const trimmedName = selected.name.trim();
         if (players.length >= 40) {
             alert('Max 40 players (10 courts × 4).');
             return;
@@ -38,36 +53,43 @@ export default function PlayerList() {
             alert('Name already added.');
             return;
         }
-        add(trimmedName, numericRating);
-        setName('');
-        setRating('');
+        add(trimmedName, selected.rating);
+        setSelected(null);
+        setQuery('');
     };
 
     return (
         <Stack spacing={3.0}>
             <Typography variant="h6">Players ({players.length})</Typography>
             <Stack direction="row" spacing={1}>
-                <TextField
-                    label="Player name"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    size="small"
-                    fullWidth
-                    onKeyDown={e => {
-                        if (e.key === 'Enter') handleAdd();
-                    }}
+                <Autocomplete<DbPlayer>
+                    options={options}
+                    getOptionLabel={o => o.name}
+                    value={selected}
+                    onChange={(_, v) => setSelected(v)}
+                    inputValue={query}
+                    onInputChange={(_, v) => setQuery(v)}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            label="Player name"
+                            size="small"
+                            fullWidth
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') handleAdd();
+                            }}
+                        />
+                    )}
+                    disabled={started}
                 />
                 <TextField
                     label="DUPR"
-                    value={rating}
-                    onChange={e => setRating(e.target.value)}
+                    value={selected?.rating ?? ''}
                     size="small"
                     sx={{ width: 100 }}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter') handleAdd();
-                    }}
+                    disabled
                 />
-                <Button onClick={handleAdd} variant="contained" disabled={started}>
+                <Button onClick={handleAdd} variant="contained" disabled={started || !selected}>
                     Add
                 </Button>
             </Stack>
