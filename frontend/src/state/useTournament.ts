@@ -8,7 +8,7 @@ const generateId = () =>
 
 const GAMES_PER_ROUND = 3;
 
-type Store = TournamentState & {
+interface Store extends TournamentState {
     addPlayer: (name: string, rating: number) => void;
     removePlayer: (id: string) => void;
     reset: () => void;
@@ -24,7 +24,7 @@ type Store = TournamentState & {
     canStart: () => boolean;
     requiredCourts: () => number;
     getPlayer: (id: string) => Player;
-};
+}
 
 export const useTournament = create<Store>()(
     persist(
