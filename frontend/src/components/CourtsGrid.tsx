@@ -6,6 +6,7 @@ import {
     TextField,
     Button,
     IconButton,
+    Box,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import Grid from '@mui/material/Grid';
@@ -51,7 +52,7 @@ export default function CourtsGrid() {
                                 {!court.submitted && (
                                     <>
                                         <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                            <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0 }}>
                                                 <strong>A:</strong> {formatTeam(court.teamA)}
                                             </Typography>
                                             <TextField
@@ -61,9 +62,10 @@ export default function CourtsGrid() {
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
                                                 sx={{ width: 60 }}
                                             />
+                                            <Box sx={{ width: 40 }} />
                                         </Stack>
                                         <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                            <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0 }}>
                                                 <strong>B:</strong> {formatTeam(court.teamB)}
                                             </Typography>
                                             <TextField
@@ -115,7 +117,7 @@ export default function CourtsGrid() {
                 </Grid>
             ))}
             {roundComplete && (
-                <Grid xs={12} textAlign="center">
+                <Grid xs={12} textAlign="center" sx={{ mt: 2 }}>
                     <Button variant="contained" onClick={submitRound}>
                         Submit Round
                     </Button>
