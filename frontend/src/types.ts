@@ -7,8 +7,6 @@ export type Player = {
   pointsWon: number;
   /** Total points opponents earned against the player */
   pointsLost: number;
-  /** Net payout balance for the player */
-  balance: number;
   rating: number;
   court1Finishes: number;
   lastPartnerId: string | null;
@@ -18,6 +16,7 @@ export type Player = {
 };
 
 export type CourtGame = {
+  court: number;
   round: number;
   game: number;
   teamA: string[];
@@ -52,6 +51,7 @@ export type TournamentState = {
   entryFee: number;
   started: boolean;
   maxCourts: number;
+  matches: CourtGame[];
 };
 
 export type CourtPayout = {

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CourtState, Player, ResultMark, TournamentState, CourtPayout } from '../types';
+import type { CourtState, Player, ResultMark, TournamentState, CourtPayout, CourtGame } from '../types';
 import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '../utils/rotation';
 
 const generateId = () =>
@@ -36,6 +36,7 @@ export const useTournament = create<Store>()(
             entryFee: 30,
             started: false,
             maxCourts: 10,
+            matches: [],
 
             addPlayer: (name, rating) =>
                 set((s) => {
@@ -47,7 +48,6 @@ export const useTournament = create<Store>()(
                         name,
                         pointsWon: 0,
                         pointsLost: 0,
-                        balance: 0,
                         rating,
                         court1Finishes: 0,
                         lastPartnerId: null,
@@ -70,7 +70,8 @@ export const useTournament = create<Store>()(
                 totalRounds: 3,
                 entryFee: 30,
                 started: false,
-                maxCourts: 10
+                maxCourts: 10,
+                matches: []
             })),
 
             setConfig: cfg =>
@@ -132,6 +133,7 @@ export const useTournament = create<Store>()(
             editGameScore: (courtNumber, gameNumber, scores) => {
                 const gp = get().getPlayer;
                 set((s) => {
+                    let newMatch: CourtGame | null = null;
                     const courts = s.courts.map(c => {
                         if (c.court !== courtNumber) return c;
                         const idx = c.history.findIndex(h => h.game === gameNumber);
@@ -168,9 +170,6 @@ export const useTournament = create<Store>()(
                         if (c.court === 1) {
                             winnersOld.forEach(p => p.court1Finishes--);
                         }
-                        winnersOld.forEach(p => p.balance += 1);
-                        const bestPlayer = gp(entry.bestPlayerId);
-                        bestPlayer.balance -= winnersOld.length;
 
                         const winnersNew = newRes === 'A' ? aPlayers : bPlayers;
                         const losersNew = newRes === 'A' ? bPlayers : aPlayers;
@@ -191,8 +190,6 @@ export const useTournament = create<Store>()(
                         if (c.court === 1) {
                             winnersNew.forEach(p => p.court1Finishes++);
                         }
-                        winnersNew.forEach(p => p.balance -= 1);
-                        bestPlayer.balance += winnersNew.length;
 
                         const updated = { ...entry, scoreA: newA, scoreB: newB, result: newRes };
                         const history = c.history.map((h, i) => (i === idx ? updated : h));
@@ -242,10 +239,8 @@ export const useTournament = create<Store>()(
                             ? get().players.reduce((best, cur) => (cur.rating > best.rating ? cur : best), get().players[0])
                             : [...aPlayers, ...bPlayers].reduce((best, cur) => (cur.rating > best.rating ? cur : best));
 
-                        winners.forEach(p => { p.balance -= 1; });
-                        bestPlayer.balance += winners.length;
-
-                        const gameEntry = {
+                        const gameEntry: CourtGame = {
+                            court: c.court,
                             round: s.round,
                             game: c.game,
                             teamA: c.teamA,
@@ -255,6 +250,7 @@ export const useTournament = create<Store>()(
                             result: res,
                             bestPlayerId: bestPlayer.id,
                         };
+                        newMatch = gameEntry;
 
                         const [a0, a1] = c.teamA;
                         const [b0, b1] = c.teamB;
@@ -272,7 +268,7 @@ export const useTournament = create<Store>()(
                         return { ...c, submitted: true, scoreA: undefined, scoreB: undefined, history: c.history.concat(gameEntry) };
                     });
 
-                    return { ...s, courts };
+                    return { ...s, courts, matches: newMatch ? s.matches.concat(newMatch) : s.matches };
                 });
             },
 
@@ -391,6 +387,7 @@ export const useTournament = create<Store>()(
                     ...c,
                     history: c.history ?? [],
                 }));
+                merged.matches = merged.matches ?? [];
                 return merged;
             },
         }
