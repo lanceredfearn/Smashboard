@@ -25,6 +25,7 @@ export default function PlayerList() {
     const remove = useTournament(s => s.removePlayer);
     const toggleBuyIn = useTournament(s => s.toggleBuyIn);
     const started = useTournament(s => s.started);
+    const buyInFee = useTournament(s => s.buyInFee);
 
     type DbPlayer = { name: string; rating: number };
     const [query, setQuery] = useState('');
@@ -65,7 +66,14 @@ export default function PlayerList() {
 
     return (
         <Stack spacing={3.0}>
-            <Typography variant="h6">Players ({players.length})</Typography>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="h6">Players ({players.length})</Typography>
+                {isSmb && (
+                    <Typography variant="body2" color="text.secondary">
+                        Moneyball Buy-In (${buyInFee})
+                    </Typography>
+                )}
+            </Stack>
             <Stack direction="row" spacing={1}>
                 <Autocomplete<DbPlayer>
                     options={options}
@@ -106,17 +114,19 @@ export default function PlayerList() {
                 {players.map(player => (
                     <ListItem key={player.id} secondaryAction={
                         <ListItemSecondaryAction>
-                            {isSmb && (
-                                <Checkbox
-                                    edge="start"
-                                    checked={!!player.buyIn}
-                                    onChange={() => toggleBuyIn(player.id)}
-                                    disabled={started}
-                                />
-                            )}
-                            <IconButton edge="end" onClick={() => remove(player.id)} disabled={started}>
-                                <DeleteIcon />
-                            </IconButton>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                                {isSmb && (
+                                    <Checkbox
+                                        edge="start"
+                                        checked={!!player.buyIn}
+                                        onChange={() => toggleBuyIn(player.id)}
+                                        disabled={started}
+                                    />
+                                )}
+                                <IconButton edge="end" onClick={() => remove(player.id)} disabled={started}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Stack>
                         </ListItemSecondaryAction>
                     }>
                         <ListItemText primary={`${player.name} (${player.rating})`} />

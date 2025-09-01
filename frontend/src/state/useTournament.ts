@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CourtState, Player, ResultMark, TournamentState, CourtPayout, CourtGame } from '@/types';
 import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '@/utils/rotation';
@@ -30,9 +30,10 @@ interface Store extends TournamentState {
     toggleBuyIn: (id: string) => void;
 }
 
-export const useTournament = create<Store>()(
-    persist(
-        (set, get) => ({
+const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
+    create<Store>()(
+        persist(
+            (set, get) => ({
             players: [],
             courts: [],
             round: 0,
@@ -406,12 +407,12 @@ export const useTournament = create<Store>()(
             }
         }),
         {
-            name: 'kotc10',
+            name,
             merge: (persisted: unknown, current: Store): Store => {
                 const merged: Store = {
                     ...current,
                     ...(persisted as Partial<TournamentState>),
-                }
+                };
                 merged.players = (merged.players ?? []).map((p: Player) => ({
                     ...p,
                     partnerHistory: p.partnerHistory ?? [],
@@ -426,5 +427,37 @@ export const useTournament = create<Store>()(
                 return merged;
             },
         }
-    )
-);
+    );
+
+const snlStore = createTournamentStore('snl');
+const smbStore = createTournamentStore('smb');
+
+const syncWithBackend = (key: string, store: typeof snlStore) => {
+    if (typeof window === 'undefined') return;
+    fetch(`/api/state/${key}`)
+        .then(res => (res.ok ? res.text() : null))
+        .then(data => {
+            if (data) {
+                try {
+                    store.setState({ ...store.getState(), ...JSON.parse(data) });
+                } catch { }
+            }
+        })
+        .catch(() => {});
+    store.subscribe(state => {
+        fetch(`/api/state/${key}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state),
+        }).catch(() => {});
+    });
+};
+
+syncWithBackend('snl', snlStore);
+syncWithBackend('smb', smbStore);
+
+export const useTournament: typeof snlStore = ((selector?: any, eq?: any) => {
+    const isSmb = typeof window !== 'undefined' && window.location.pathname.startsWith('/smb');
+    const store = isSmb ? smbStore : snlStore;
+    return store(selector as any, eq as any);
+}) as typeof snlStore;
