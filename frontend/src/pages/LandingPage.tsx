@@ -1,6 +1,7 @@
-import { Button, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -16,28 +17,32 @@ export default function LandingPage() {
         Smashboard
       </Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4}>
-        <Button
-          variant="contained"
-          color="primary"
-          size="large"
-          sx={{ width: 220, height: 100, fontSize: '1.2rem' }}
-          onClick={() => navigate('/snl')}
-        >
-          SNL
-          <br />
-          Saturday Night Lights
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          size="large"
-          sx={{ width: 220, height: 100, fontSize: '1.2rem' }}
-          onClick={() => navigate('/smb')}
-        >
-          SMB
-          <br />
-          Senior Money Ball
-        </Button>
+        <CardContainer>
+          <CardBody
+            className="group/card flex h-[100px] w-[220px] cursor-pointer flex-col items-center justify-center rounded-xl bg-blue-600 text-white"
+            onClick={() => navigate('/snl')}
+          >
+            <CardItem translateZ={50} className="text-xl font-bold">
+              SNL
+            </CardItem>
+            <CardItem translateZ={60} className="mt-2 text-sm text-center">
+              Saturday Night Lights
+            </CardItem>
+          </CardBody>
+        </CardContainer>
+        <CardContainer>
+          <CardBody
+            className="group/card flex h-[100px] w-[220px] cursor-pointer flex-col items-center justify-center rounded-xl bg-pink-600 text-white"
+            onClick={() => navigate('/smb')}
+          >
+            <CardItem translateZ={50} className="text-xl font-bold">
+              SMB
+            </CardItem>
+            <CardItem translateZ={60} className="mt-2 text-sm text-center">
+              Senior Money Ball
+            </CardItem>
+          </CardBody>
+        </CardContainer>
       </Stack>
     </Stack>
   );
