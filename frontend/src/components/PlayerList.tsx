@@ -7,18 +7,23 @@ import {
     ListItem,
     ListItemSecondaryAction,
     ListItemText,
+    Checkbox,
     Stack,
     TextField,
     Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTournament } from '../state/useTournament';
 
 export default function PlayerList() {
+    const location = useLocation();
+    const isSmb = location.pathname.startsWith('/smb');
     const players = useTournament(s => s.players);
     const add = useTournament(s => s.addPlayer);
     const remove = useTournament(s => s.removePlayer);
+    const toggleBuyIn = useTournament(s => s.toggleBuyIn);
     const started = useTournament(s => s.started);
 
     type DbPlayer = { name: string; rating: number };
@@ -101,6 +106,14 @@ export default function PlayerList() {
                 {players.map(player => (
                     <ListItem key={player.id} secondaryAction={
                         <ListItemSecondaryAction>
+                            {isSmb && (
+                                <Checkbox
+                                    edge="start"
+                                    checked={!!player.buyIn}
+                                    onChange={() => toggleBuyIn(player.id)}
+                                    disabled={started}
+                                />
+                            )}
                             <IconButton edge="end" onClick={() => remove(player.id)} disabled={started}>
                                 <DeleteIcon />
                             </IconButton>

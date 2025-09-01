@@ -9,30 +9,25 @@ import PayoutsTable from './components/PayoutsTable';
 import MatchScoresTable from './components/MatchScoresTable';
 import { useTournament } from './state/useTournament';
 import Panel from './components/Panel';
+import { useLocation } from 'react-router-dom';
 
 "use client";
 import { TypewriterEffectSmooth } from "./components/ui/typewriter-effect";
 
-const words = [
-    {
-        text: "King",
-        className: "text-blue-500 dark:text-blue-500"
-    },
-    {
-        text: "of",
-        className: "text-blue-500 dark:text-blue-500"
-    },
-    {
-        text: "the",
-        className: "text-blue-500 dark:text-blue-500"
-    },
-    {
-        text: "Court",
-        className: "text-blue-500 dark:text-blue-500"
-    }
-]
-
 export default function App() {
+    const location = useLocation();
+    const isSmb = location.pathname.startsWith('/smb');
+    const words = isSmb
+        ? [
+            { text: 'Money', className: 'text-pink-500 dark:text-pink-500' },
+            { text: 'Ball', className: 'text-pink-500 dark:text-pink-500' },
+        ]
+        : [
+            { text: 'King', className: 'text-blue-500 dark:text-blue-500' },
+            { text: 'of', className: 'text-blue-500 dark:text-blue-500' },
+            { text: 'the', className: 'text-blue-500 dark:text-blue-500' },
+            { text: 'Court', className: 'text-blue-500 dark:text-blue-500' },
+        ];
     const { started, round, totalRounds } = useTournament(s => ({
         started: s.started,
         round: s.round,
@@ -52,7 +47,7 @@ export default function App() {
                     <TypewriterEffectSmooth words={words}/>
                 </div>
                 <Typography style={{alignSelf: 'center'}} variant="body2" color="text.secondary">
-                    Where Every Court Pays Out!
+                    {isSmb ? 'Moneyball Madness!' : 'Where Every Court Pays Out!'}
                 </Typography>
             </Stack>
 
