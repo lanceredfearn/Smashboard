@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "tsc src/types.ts src/utils/rotation.ts src/utils/rotation.test.ts --module es2020 --target ES2019 --moduleResolution node --skipLibCheck --outDir dist-test && node --test dist-test/utils/rotation.test.js && rm -rf dist-test"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
