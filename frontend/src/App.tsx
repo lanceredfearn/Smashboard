@@ -6,6 +6,7 @@ import RoundControls from './components/RoundControls';
 import CourtsGrid from './components/CourtsGrid';
 import StandingsTable from './components/StandingsTable';
 import PayoutsTable from './components/PayoutsTable';
+import MatchScoresTable from './components/MatchScoresTable';
 import { useTournament } from './state/useTournament';
 import Panel from './components/Panel';
 
@@ -82,6 +83,10 @@ export default function App() {
                             Standings {standingsLabel}
                         </Typography>
                         <StandingsTable/>
+                    </Panel>
+
+                    <Panel sx={{mt: 2}}>
+                        <MatchScoresTable/>
                     </Panel>
 
                     <Panel sx={{mt: 2}}>

@@ -38,6 +38,7 @@ export default function CourtsGrid() {
         ((court.scoreA >= 11 || court.scoreB >= 11) && Math.abs(court.scoreA - court.scoreB) >= 2);
 
     const roundComplete = courts.every(c => c.submitted && c.game === 3);
+    const scoreInputSx = { width: 60 } as const;
 
     return (
         <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -52,7 +53,7 @@ export default function CourtsGrid() {
                                 {!court.submitted && (
                                     <>
                                         <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0 }}>
+                                            <Typography variant="body2" sx={{ flexBasis: 0, flexGrow: 1, minWidth: 0 }}>
                                                 <strong>A:</strong> {formatTeam(court.teamA)}
                                             </Typography>
                                             <TextField
@@ -60,12 +61,12 @@ export default function CourtsGrid() {
                                                 value={court.scoreA ?? ''}
                                                 onChange={e => markResult(court.court, { scoreA: e.target.value === '' ? undefined : Number(e.target.value) })}
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
-                                                sx={{ width: 60 }}
+                                                sx={scoreInputSx}
                                             />
                                             <Box sx={{ width: 40 }} />
                                         </Stack>
                                         <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0 }}>
+                                            <Typography variant="body2" sx={{ flexBasis: 0, flexGrow: 1, minWidth: 0 }}>
                                                 <strong>B:</strong> {formatTeam(court.teamB)}
                                             </Typography>
                                             <TextField
@@ -73,7 +74,7 @@ export default function CourtsGrid() {
                                                 value={court.scoreB ?? ''}
                                                 onChange={e => markResult(court.court, { scoreB: e.target.value === '' ? undefined : Number(e.target.value) })}
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
-                                                sx={{ width: 60 }}
+                                                sx={scoreInputSx}
                                             />
                                             <IconButton
                                                 color="success"
@@ -98,7 +99,7 @@ export default function CourtsGrid() {
                                                 value={g.scoreA}
                                                 onChange={e => editGame(court.court, g.game, { scoreA: Number(e.target.value) })}
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
-                                                sx={{ width: 60 }}
+                                                sx={scoreInputSx}
                                             />
                                             <TextField
                                                 label="B"
@@ -106,7 +107,7 @@ export default function CourtsGrid() {
                                                 value={g.scoreB}
                                                 onChange={e => editGame(court.court, g.game, { scoreB: Number(e.target.value) })}
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
-                                                sx={{ width: 60 }}
+                                                sx={scoreInputSx}
                                             />
                                         </Stack>
                                     </Stack>

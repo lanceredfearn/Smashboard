@@ -10,14 +10,13 @@ export default function StandingsTable() {
 
     const exportStandings = () => {
         const rows: string[][] = [
-            ['Rank', 'Player', 'Pts Won', 'Pts Lost', 'Diff', 'Balance'],
+            ['Rank', 'Player', 'Pts Won', 'Pts Lost', 'Diff'],
             ...standingsList.map((player, i) => [
                 String(i + 1),
                 player.name,
                 String(player.pointsWon),
                 String(player.pointsLost),
                 String(player.pointsWon - player.pointsLost),
-                String(player.balance),
             ]),
         ];
         exportCSV('standings.csv', rows);
@@ -33,7 +32,6 @@ export default function StandingsTable() {
                         <TableCell>Pts Won</TableCell>
                         <TableCell>Pts Lost</TableCell>
                         <TableCell>Diff</TableCell>
-                        <TableCell>Balance</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -44,7 +42,6 @@ export default function StandingsTable() {
                             <TableCell>{player.pointsWon}</TableCell>
                             <TableCell>{player.pointsLost}</TableCell>
                             <TableCell>{player.pointsWon - player.pointsLost}</TableCell>
-                            <TableCell>{player.balance}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
