@@ -16,6 +16,7 @@ type Store = TournamentState & {
         'maxCourts' | 'totalRounds' | 'entryFee'>>) => void;
     startTournament: () => void;
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
+    editGameScore: (court: number, game: number, scores: { scoreA?: number; scoreB?: number }) => void;
     submitCourt: (court: number) => void;
     standings: () => Player[];
     payouts: () => { totalPot: number; payoutPool: number; awards: CourtPayout[] };
@@ -110,9 +111,95 @@ export const useTournament = create<Store>()(
 
             markCourtResult: (court, scores) =>
                 set((s) => {
-                    const courts = s.courts.map(c => (c.court === court ? { ...c, ...scores } : c));
+                    const courts = s.courts.map(c => {
+                        if (c.court !== court) return c;
+                        let scoreA = c.scoreA;
+                        let scoreB = c.scoreB;
+                        if (scores.scoreA !== undefined) {
+                            const used = c.history.reduce((sum, g) => sum + g.scoreA, 0);
+                            scoreA = Math.min(Math.max(0, scores.scoreA), 11, 33 - used);
+                        }
+                        if (scores.scoreB !== undefined) {
+                            const used = c.history.reduce((sum, g) => sum + g.scoreB, 0);
+                            scoreB = Math.min(Math.max(0, scores.scoreB), 11, 33 - used);
+                        }
+                        return { ...c, scoreA, scoreB };
+                    });
                     return { ...s, courts };
                 }),
+
+            editGameScore: (courtNumber, gameNumber, scores) => {
+                const gp = get().getPlayer;
+                set((s) => {
+                    const courts = s.courts.map(c => {
+                        if (c.court !== courtNumber) return c;
+                        const idx = c.history.findIndex(h => h.game === gameNumber);
+                        if (idx === -1) return c;
+                        const entry = c.history[idx];
+                        const otherASum = c.history.reduce((sum, g, i) => sum + (i === idx ? 0 : g.scoreA), 0);
+                        const otherBSum = c.history.reduce((sum, g, i) => sum + (i === idx ? 0 : g.scoreB), 0);
+                        let newA = scores.scoreA !== undefined ? scores.scoreA : entry.scoreA;
+                        let newB = scores.scoreB !== undefined ? scores.scoreB : entry.scoreB;
+                        newA = Math.min(Math.max(0, newA), 11, 33 - otherASum);
+                        newB = Math.min(Math.max(0, newB), 11, 33 - otherBSum);
+                        const oldA = entry.scoreA;
+                        const oldB = entry.scoreB;
+                        const oldRes: ResultMark = entry.result;
+                        const newRes: ResultMark = newA > newB ? 'A' : 'B';
+                        const aPlayers = entry.teamA.map(gp);
+                        const bPlayers = entry.teamB.map(gp);
+                        const winnersOld = oldRes === 'A' ? aPlayers : bPlayers;
+                        const losersOld = oldRes === 'A' ? bPlayers : aPlayers;
+                        const winnerScoreOld = oldRes === 'A' ? oldA : oldB;
+                        const loserScoreOld = oldRes === 'A' ? oldB : oldA;
+                        winnersOld.forEach(p => {
+                            p.pointsWon -= winnerScoreOld;
+                            p.pointsLost -= loserScoreOld;
+                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
+                            if (h) h.result = 'L';
+                        });
+                        losersOld.forEach(p => {
+                            p.pointsWon -= loserScoreOld;
+                            p.pointsLost -= winnerScoreOld;
+                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
+                            if (h) h.result = 'W';
+                        });
+                        if (c.court === 1) {
+                            winnersOld.forEach(p => p.court1Finishes--);
+                        }
+                        winnersOld.forEach(p => p.balance += 1);
+                        const bestPlayer = gp(entry.bestPlayerId);
+                        bestPlayer.balance -= winnersOld.length;
+
+                        const winnersNew = newRes === 'A' ? aPlayers : bPlayers;
+                        const losersNew = newRes === 'A' ? bPlayers : aPlayers;
+                        const winnerScoreNew = newRes === 'A' ? newA : newB;
+                        const loserScoreNew = newRes === 'A' ? newB : newA;
+                        winnersNew.forEach(p => {
+                            p.pointsWon += winnerScoreNew;
+                            p.pointsLost += loserScoreNew;
+                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
+                            if (h) { h.team = newRes; h.result = 'W'; }
+                        });
+                        losersNew.forEach(p => {
+                            p.pointsWon += loserScoreNew;
+                            p.pointsLost += winnerScoreNew;
+                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
+                            if (h) { h.team = newRes === 'A' ? 'B' : 'A'; h.result = 'L'; }
+                        });
+                        if (c.court === 1) {
+                            winnersNew.forEach(p => p.court1Finishes++);
+                        }
+                        winnersNew.forEach(p => p.balance -= 1);
+                        bestPlayer.balance += winnersNew.length;
+
+                        const updated = { ...entry, scoreA: newA, scoreB: newB, result: newRes };
+                        const history = c.history.map((h, i) => (i === idx ? updated : h));
+                        return { ...c, history };
+                    });
+                    return { ...s, courts };
+                });
+            },
 
             submitCourt: (courtNumber) => {
                 const gp = get().getPlayer;
@@ -138,12 +225,12 @@ export const useTournament = create<Store>()(
                         winners.forEach(p => {
                             p.pointsWon += winnerScore;
                             p.pointsLost += loserScore;
-                            p.history.push({ round: s.round, court: c.court, team: res, result: 'W' });
+                            p.history.push({ round: s.round, court: c.court, game: c.game, team: res, result: 'W' });
                         });
                         losers.forEach(p => {
                             p.pointsWon += loserScore;
                             p.pointsLost += winnerScore;
-                            p.history.push({ round: s.round, court: c.court, team: res === 'A' ? 'B' : 'A', result: 'L' });
+                            p.history.push({ round: s.round, court: c.court, game: c.game, team: res === 'A' ? 'B' : 'A', result: 'L' });
                         });
 
                         if (c.court === 1) {
@@ -157,6 +244,17 @@ export const useTournament = create<Store>()(
                         winners.forEach(p => { p.balance -= 1; });
                         bestPlayer.balance += winners.length;
 
+                        const gameEntry = {
+                            round: s.round,
+                            game: c.game,
+                            teamA: c.teamA,
+                            teamB: c.teamB,
+                            scoreA,
+                            scoreB,
+                            result: res,
+                            bestPlayerId: bestPlayer.id,
+                        };
+
                         const [a0, a1] = c.teamA;
                         const [b0, b1] = c.teamB;
                         const pa0 = gp(a0); pa0.lastPartnerId = a1; pa0.partnerHistory.push(a1);
@@ -167,10 +265,10 @@ export const useTournament = create<Store>()(
                         if (c.game < GAMES_PER_ROUND) {
                             const participants = [...c.teamA, ...c.teamB];
                             const { A, B } = formTeamsAvoidingRepeat(participants, gp);
-                            return { court: c.court, teamA: A, teamB: B, submitted: false, game: c.game + 1 };
+                            return { court: c.court, teamA: A, teamB: B, submitted: false, game: c.game + 1, scoreA: undefined, scoreB: undefined, history: c.history.concat(gameEntry) };
                         }
 
-                        return { ...c, submitted: true };
+                        return { ...c, submitted: true, scoreA: undefined, scoreB: undefined, history: c.history.concat(gameEntry) };
                     });
 
                     // Check if round is complete across all courts
@@ -199,6 +297,7 @@ export const useTournament = create<Store>()(
                                 scoreA: undefined,
                                 scoreB: undefined,
                                 submitted: false,
+                                history: [],
                             })),
                             round,
                             started,
