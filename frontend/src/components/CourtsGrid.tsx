@@ -49,7 +49,7 @@ export default function CourtsGrid() {
                                 <Typography variant="body2">
                                     <strong>B:</strong> {formatTeam(court.teamB)}
                                 </Typography>
-                                {court.history.map(g => (
+                                {(court.history ?? []).map(g => (
                                     <Stack key={g.game} direction="row" spacing={1} alignItems="center">
                                         <Typography variant="body2">Game {g.game}</Typography>
                                         <TextField

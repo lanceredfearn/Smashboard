@@ -371,6 +371,24 @@ export const useTournament = create<Store>()(
                 return { totalPot, payoutPool, awards };
             }
         }),
-        { name: 'kotc10' }
+        {
+            name: 'kotc10',
+            merge: (persisted, current) => {
+                const merged = {
+                    ...current,
+                    ...(persisted as Partial<TournamentState>),
+                } as TournamentState;
+                merged.players = (merged.players ?? []).map((p: Player) => ({
+                    ...p,
+                    partnerHistory: p.partnerHistory ?? [],
+                    history: p.history ?? [],
+                }));
+                merged.courts = (merged.courts ?? []).map((c: CourtState) => ({
+                    ...c,
+                    history: c.history ?? [],
+                }));
+                return merged;
+            },
+        }
     )
 );
