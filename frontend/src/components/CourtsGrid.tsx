@@ -50,24 +50,28 @@ export default function CourtsGrid() {
                                     <strong>B:</strong> {formatTeam(court.teamB)}
                                 </Typography>
                                 {(court.history ?? []).map(g => (
-                                    <Stack key={g.game} direction="row" spacing={1} alignItems="center">
-                                        <Typography variant="body2">Game {g.game}</Typography>
-                                        <TextField
-                                            label="A"
-                                            size="small"
-                                            value={g.scoreA}
-                                            onChange={e => editGame(court.court, g.game, { scoreA: Number(e.target.value) })}
-                                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
-                                            sx={{ width: 60 }}
-                                        />
-                                        <TextField
-                                            label="B"
-                                            size="small"
-                                            value={g.scoreB}
-                                            onChange={e => editGame(court.court, g.game, { scoreB: Number(e.target.value) })}
-                                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
-                                            sx={{ width: 60 }}
-                                        />
+                                    <Stack key={g.game} spacing={0.5}>
+                                        <Typography variant="body2">
+                                            Game {g.game}: {formatTeam(g.teamA)} {g.scoreA}–{g.scoreB} {formatTeam(g.teamB)}
+                                        </Typography>
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <TextField
+                                                label="A"
+                                                size="small"
+                                                value={g.scoreA}
+                                                onChange={e => editGame(court.court, g.game, { scoreA: Number(e.target.value) })}
+                                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
+                                                sx={{ width: 60 }}
+                                            />
+                                            <TextField
+                                                label="B"
+                                                size="small"
+                                                value={g.scoreB}
+                                                onChange={e => editGame(court.court, g.game, { scoreB: Number(e.target.value) })}
+                                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
+                                                sx={{ width: 60 }}
+                                            />
+                                        </Stack>
                                     </Stack>
                                 ))}
                                 {!court.submitted && (
