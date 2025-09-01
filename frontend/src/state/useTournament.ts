@@ -202,6 +202,7 @@ export const useTournament = create<Store>()(
             submitCourt: (courtNumber) => {
                 const gp = get().getPlayer;
                 set((s) => {
+                    let newMatch: CourtGame | null = null;
                     const courts = s.courts.map(c => {
                         if (c.court !== courtNumber) return c;
                         const valid =
@@ -373,11 +374,11 @@ export const useTournament = create<Store>()(
         }),
         {
             name: 'kotc10',
-            merge: (persisted, current) => {
-                const merged = {
+            merge: (persisted: unknown, current: Store): Store => {
+                const merged: Store = {
                     ...current,
                     ...(persisted as Partial<TournamentState>),
-                } as TournamentState;
+                }
                 merged.players = (merged.players ?? []).map((p: Player) => ({
                     ...p,
                     partnerHistory: p.partnerHistory ?? [],
