@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import React from "react";
-import pickleball from "@/assets/pickleball.svg";
+import pickleball from "../../assets/pickleball.svg";
 
 export const Pickleballs = ({
   number,

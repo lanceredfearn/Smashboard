@@ -52,8 +52,7 @@ export default function App() {
                     <TypewriterEffectSmooth words={words}/>
                 </div>
                 <Typography style={{alignSelf: 'center'}} variant="body2" color="text.secondary">
-                    Winner-up / loser-down (Ct 1 winners & top-court losers stay). Partner
-                    mixing reduces repeat partners. Data persists in your browser.
+                    Where Every Court Pays Out!
                 </Typography>
             </Stack>
 

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CourtState, Player, ResultMark, TournamentState, CourtPayout, CourtGame } from '../types';
-import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '../utils/rotation';
+import type { CourtState, Player, ResultMark, TournamentState, CourtPayout, CourtGame } from '@/types';
+import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '@/utils/rotation';
 
 const generateId = () =>
     (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
@@ -9,6 +9,7 @@ const generateId = () =>
 const GAMES_PER_ROUND = 3;
 
 interface Store extends TournamentState {
+    matches: never[];
     addPlayer: (name: string, rating: number) => void;
     removePlayer: (id: string) => void;
     reset: () => void;
