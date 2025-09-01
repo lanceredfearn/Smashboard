@@ -14,6 +14,7 @@ export default function CourtsGrid() {
     const courts = useTournament(s => s.courts);
     const players = useTournament(s => s.players);
     const markResult = useTournament(s => s.markCourtResult);
+    const editGame = useTournament(s => s.editGameScore);
     const submitCourt = useTournament(s => s.submitCourt);
 
     const nameMap = useMemo(() => {
@@ -48,34 +49,55 @@ export default function CourtsGrid() {
                                 <Typography variant="body2">
                                     <strong>B:</strong> {formatTeam(court.teamB)}
                                 </Typography>
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <TextField
-                                        label="A"
-                                        size="small"
-                                        value={court.scoreA ?? ''}
-                                        onChange={e => markResult(court.court, { scoreA: e.target.value === '' ? undefined : Number(e.target.value) })}
-                                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                                        sx={{ width: 60 }}
-                                        disabled={court.submitted}
-                                    />
-                                    <TextField
-                                        label="B"
-                                        size="small"
-                                        value={court.scoreB ?? ''}
-                                        onChange={e => markResult(court.court, { scoreB: e.target.value === '' ? undefined : Number(e.target.value) })}
-                                        inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                                        sx={{ width: 60 }}
-                                        disabled={court.submitted}
-                                    />
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        onClick={() => submitCourt(court.court)}
-                                        disabled={court.submitted || !canSubmit(court)}
-                                    >
-                                        {court.submitted ? 'Submitted' : 'Submit'}
-                                    </Button>
-                                </Stack>
+                                {court.history.map(g => (
+                                    <Stack key={g.game} direction="row" spacing={1} alignItems="center">
+                                        <Typography variant="body2">Game {g.game}</Typography>
+                                        <TextField
+                                            label="A"
+                                            size="small"
+                                            value={g.scoreA}
+                                            onChange={e => editGame(court.court, g.game, { scoreA: Number(e.target.value) })}
+                                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
+                                            sx={{ width: 60 }}
+                                        />
+                                        <TextField
+                                            label="B"
+                                            size="small"
+                                            value={g.scoreB}
+                                            onChange={e => editGame(court.court, g.game, { scoreB: Number(e.target.value) })}
+                                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
+                                            sx={{ width: 60 }}
+                                        />
+                                    </Stack>
+                                ))}
+                                {!court.submitted && (
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <TextField
+                                            label="A"
+                                            size="small"
+                                            value={court.scoreA ?? ''}
+                                            onChange={e => markResult(court.court, { scoreA: e.target.value === '' ? undefined : Number(e.target.value) })}
+                                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
+                                            sx={{ width: 60 }}
+                                        />
+                                        <TextField
+                                            label="B"
+                                            size="small"
+                                            value={court.scoreB ?? ''}
+                                            onChange={e => markResult(court.court, { scoreB: e.target.value === '' ? undefined : Number(e.target.value) })}
+                                            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
+                                            sx={{ width: 60 }}
+                                        />
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            onClick={() => submitCourt(court.court)}
+                                            disabled={!canSubmit(court)}
+                                        >
+                                            Submit
+                                        </Button>
+                                    </Stack>
+                                )}
                             </Stack>
                         </CardContent>
                     </Card>

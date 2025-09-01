@@ -14,7 +14,18 @@ export type Player = {
   lastPartnerId: string | null;
   /** IDs of partners played with in the current round */
   partnerHistory: string[];
-  history: Array<{ round: number; court: number; team: 'A' | 'B'; result: 'W' | 'L' }>;
+  history: Array<{ round: number; court: number; game: number; team: 'A' | 'B'; result: 'W' | 'L' }>;
+};
+
+export type CourtGame = {
+  round: number;
+  game: number;
+  teamA: string[];
+  teamB: string[];
+  scoreA: number;
+  scoreB: number;
+  result: ResultMark;
+  bestPlayerId: string;
 };
 
 export type CourtState = {
@@ -29,6 +40,8 @@ export type CourtState = {
   scoreB?: number;
   /** Whether this court's result has been submitted */
   submitted: boolean;
+  /** Completed games for this court */
+  history: CourtGame[];
 };
 
 export type TournamentState = {
