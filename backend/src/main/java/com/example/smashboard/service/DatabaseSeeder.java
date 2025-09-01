@@ -24,7 +24,7 @@ public class DatabaseSeeder {
 
         for (Map<String, Object> member : members) {
             Player player = new Player();
-            player.setId(member.get("id").toString());
+            player.setExternalId(member.get("id").toString());
             player.setName((String) member.get("fullName"));
             player.setDuprId((String) member.get("duprId"));
 

@@ -9,9 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long> {
-    Optional<Player> findById(String id);       // DUPR ID
-
-    Optional<Player> findByName(String name);   // by player name
-
+    Optional<Player> findByDuprId(String duprId);
+    Optional<Player> findByName(String name);
     List<Player> findByNameContainingIgnoreCase(String name);
 }

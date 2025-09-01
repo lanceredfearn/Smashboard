@@ -11,7 +11,7 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long internalId; // DB primary key
 
-    private String id;
+    private String externalId;
     private String duprId;
     private String name;
     private Double rating;
@@ -19,8 +19,8 @@ public class Player {
     public Player() {
     }
 
-    public Player(String id, String name, Double rating, String duprId) {
-        this.id = id;
+    public Player(String externalId, String name, Double rating, String duprId) {
+        this.externalId = externalId;
         this.name = name;
         this.rating = rating;
         this.duprId = duprId;
@@ -35,12 +35,12 @@ public class Player {
         this.internalId = internalId;
     }
 
-    public String getId() {
-        return id;
+    public String getExternalId() {
+        return externalId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
     public String getName() {
