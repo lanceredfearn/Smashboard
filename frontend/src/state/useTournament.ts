@@ -18,6 +18,7 @@ type Store = TournamentState & {
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
     editGameScore: (court: number, game: number, scores: { scoreA?: number; scoreB?: number }) => void;
     submitCourt: (court: number) => void;
+    submitRound: () => void;
     standings: () => Player[];
     payouts: () => { totalPot: number; payoutPool: number; awards: CourtPayout[] };
     canStart: () => boolean;
@@ -271,40 +272,43 @@ export const useTournament = create<Store>()(
                         return { ...c, submitted: true, scoreA: undefined, scoreB: undefined, history: c.history.concat(gameEntry) };
                     });
 
-                    // Check if round is complete across all courts
-                    const roundDone = courts.every(c => c.submitted && c.game === GAMES_PER_ROUND);
-                    if (roundDone) {
-                        let round = s.round + 1;
-                        let started = s.started;
-                        const players = s.players.map(p => ({ ...p, partnerHistory: [] }));
-                        const gpRound = (id: string) => {
-                            const player = players.find(x => x.id === id);
-                            if (!player) throw new Error('player not found');
-                            return player;
-                        };
-                        let nextCourts: CourtState[] = courts;
-                        if (round > s.totalRounds) {
-                            round = s.totalRounds;
-                            started = false;
-                        } else {
-                            nextCourts = moveAndReform(courts, gpRound).map(c => ({ ...c, game: 1 }));
-                        }
-                        return {
-                            ...s,
-                            players,
-                            courts: nextCourts.map(c => ({
-                                ...c,
-                                scoreA: undefined,
-                                scoreB: undefined,
-                                submitted: false,
-                                history: [],
-                            })),
-                            round,
-                            started,
-                        };
-                    }
-
                     return { ...s, courts };
+                });
+            },
+
+            submitRound: () => {
+                set((s) => {
+                    const courts = s.courts;
+                    const roundDone = courts.every(c => c.submitted && c.game === GAMES_PER_ROUND);
+                    if (!roundDone) return s;
+                    let round = s.round + 1;
+                    let started = s.started;
+                    const players = s.players.map(p => ({ ...p, partnerHistory: [] }));
+                    const gpRound = (id: string) => {
+                        const player = players.find(x => x.id === id);
+                        if (!player) throw new Error('player not found');
+                        return player;
+                    };
+                    let nextCourts: CourtState[] = courts;
+                    if (round > s.totalRounds) {
+                        round = s.totalRounds;
+                        started = false;
+                    } else {
+                        nextCourts = moveAndReform(courts, gpRound).map(c => ({ ...c, game: 1 }));
+                    }
+                    return {
+                        ...s,
+                        players,
+                        courts: nextCourts.map(c => ({
+                            ...c,
+                            scoreA: undefined,
+                            scoreB: undefined,
+                            submitted: false,
+                            history: [],
+                        })),
+                        round,
+                        started,
+                    };
                 });
             },
 
