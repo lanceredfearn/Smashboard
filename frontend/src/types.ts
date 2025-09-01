@@ -13,6 +13,8 @@ export type Player = {
   /** IDs of partners played with in the current round */
   partnerHistory: string[];
   history: Array<{ round: number; court: number; game: number; team: 'A' | 'B'; result: 'W' | 'L' }>;
+  /** Whether this player paid the buy-in for Moneyball */
+  buyIn?: boolean;
 };
 
 export type CourtGame = {
@@ -49,6 +51,8 @@ export type TournamentState = {
   round: number;
   totalRounds: number;
   entryFee: number;
+  /** Buy-in amount for Moneyball tournaments */
+  buyInFee: number;
   started: boolean;
   maxCourts: number;
   matches: CourtGame[];

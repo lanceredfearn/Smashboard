@@ -14,7 +14,7 @@ interface Store extends TournamentState {
     removePlayer: (id: string) => void;
     reset: () => void;
     setConfig: (cfg: Partial<Pick<TournamentState,
-        'maxCourts' | 'totalRounds' | 'entryFee'>>) => void;
+        'maxCourts' | 'totalRounds' | 'entryFee' | 'buyInFee'>>) => void;
     startTournament: () => void;
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
     editGameScore: (court: number, game: number, scores: { scoreA?: number; scoreB?: number }) => void;
@@ -22,9 +22,12 @@ interface Store extends TournamentState {
     submitRound: () => void;
     standings: () => Player[];
     payouts: () => { totalPot: number; payoutPool: number; awards: CourtPayout[] };
+    /** Calculates payouts for Moneyball tournaments */
+    moneyballPayouts: () => { totalPot: number; payoutPool: number; awards: { place: number; player?: Player; amount: number }[] };
     canStart: () => boolean;
     requiredCourts: () => number;
     getPlayer: (id: string) => Player;
+    toggleBuyIn: (id: string) => void;
 }
 
 export const useTournament = create<Store>()(
@@ -35,6 +38,7 @@ export const useTournament = create<Store>()(
             round: 0,
             totalRounds: 3,
             entryFee: 30,
+            buyInFee: 20,
             started: false,
             maxCourts: 10,
             matches: [],
@@ -53,7 +57,8 @@ export const useTournament = create<Store>()(
                         court1Finishes: 0,
                         lastPartnerId: null,
                         partnerHistory: [],
-                        history: []
+                        history: [],
+                        buyIn: false,
                     };
                     return { ...s, players: [...s.players, p] };
                 }),
@@ -64,12 +69,24 @@ export const useTournament = create<Store>()(
                     return { ...s, players: s.players.filter(p => p.id !== id) };
                 }),
 
+            toggleBuyIn: (id) =>
+                set((s) => {
+                    if (s.started) return s;
+                    return {
+                        ...s,
+                        players: s.players.map(p =>
+                            p.id === id ? { ...p, buyIn: !p.buyIn } : p
+                        ),
+                    };
+                }),
+
             reset: () => set(() => ({
                 players: [],
                 courts: [],
                 round: 0,
                 totalRounds: 3,
                 entryFee: 30,
+                buyInFee: 20,
                 started: false,
                 maxCourts: 10,
                 matches: []
@@ -371,6 +388,21 @@ export const useTournament = create<Store>()(
 
                 const payoutPool = awards.reduce((sum, p) => sum + p.amount, 0);
                 return { totalPot, payoutPool, awards };
+            },
+
+            moneyballPayouts: () => {
+                const s = get();
+                const buyIns = s.players.filter(p => p.buyIn);
+                const totalPot = buyIns.length * s.buyInFee;
+                const payoutPool = totalPot * 0.5;
+                const standings = get().standings().filter(p => p.buyIn);
+                const weights = [0.5, 0.3, 0.2];
+                const awards = weights.map((w, i) => ({
+                    place: i + 1,
+                    player: standings[i],
+                    amount: payoutPool * w,
+                }));
+                return { totalPot, payoutPool, awards };
             }
         }),
         {
@@ -384,6 +416,7 @@ export const useTournament = create<Store>()(
                     ...p,
                     partnerHistory: p.partnerHistory ?? [],
                     history: p.history ?? [],
+                    buyIn: p.buyIn ?? false,
                 }));
                 merged.courts = (merged.courts ?? []).map((c: CourtState) => ({
                     ...c,
