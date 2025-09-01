@@ -34,7 +34,7 @@ export const Pickleballs = ({
                 top: "-40px",
                 left: Math.random() * 100 + "%",
                 animationDelay: Math.random() * 5 + "s",
-                animationDuration: Math.floor(Math.random() * (10 - 5) + 5) + "s",
+                animationDuration: Math.random() * 3 + 2 + "s",
               }}
             />
           );
