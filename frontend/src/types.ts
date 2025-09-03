@@ -68,3 +68,14 @@ export type CourtPayout = {
   /** Total payout amount */
   amount: number;
 };
+
+export type Announcement = {
+  /** Unique id for the announcement */
+  id: string;
+  /** Tournament identifier (e.g. SNL or SMB) */
+  tournament: string;
+  /** ISO date when the announcement was created */
+  date: string;
+  /** Top players and their final scores */
+  winners: Array<{ name: string; score: number }>;
+};

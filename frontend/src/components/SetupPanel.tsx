@@ -1,6 +1,7 @@
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { useTournament } from '../state/useTournament';
+import { useAnnouncements } from '../state/useAnnouncements';
 
 export default function SetupPanel() {
     const location = useLocation();
@@ -12,7 +13,21 @@ export default function SetupPanel() {
         startTournament,
         reset,
         canStart,
+        started,
+        round,
+        totalRounds,
+        players,
+        standings,
     } = useTournament();
+    const addAnnouncement = useAnnouncements(s => s.addAnnouncement);
+
+    const handleReset = () => {
+        if (!started && round === totalRounds && players.length > 0) {
+            const winners = standings().slice(0, 3).map(p => ({ name: p.name, score: p.pointsWon }));
+            addAnnouncement({ tournament: isSmb ? 'SMB' : 'SNL', winners });
+        }
+        reset();
+    };
 
     return (
         <Stack spacing={1.5}>
@@ -38,7 +53,7 @@ export default function SetupPanel() {
                 >
                     Start Tournament
                 </Button>
-                <Button variant="outlined" color="error" onClick={reset}>
+                <Button variant="outlined" color="error" onClick={handleReset}>
                     Reset
                 </Button>
             </Stack>
