@@ -17,7 +17,7 @@ interface Store extends TournamentState {
         'maxCourts' | 'totalRounds' | 'entryFee' | 'buyInFee'>>) => void;
     startTournament: () => void;
     markCourtResult: (court: number, scores: { scoreA?: number; scoreB?: number }) => void;
-    editGameScore: (court: number, game: number, scores: { scoreA?: number; scoreB?: number }) => void;
+    editGameScore: (round: number, court: number, game: number, scores: { scoreA?: number; scoreB?: number }) => void;
     submitCourt: (court: number) => void;
     submitRound: () => void;
     standings: () => Player[];
@@ -149,72 +149,74 @@ const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
                     return { ...s, courts };
                 }),
 
-            editGameScore: (courtNumber, gameNumber, scores) => {
+            editGameScore: (round, courtNumber, gameNumber, scores) => {
                 const gp = get().getPlayer;
                 set((s) => {
-                    let newMatch: CourtGame | null = null;
+                    const matchIdx = s.matches.findIndex(m => m.round === round && m.court === courtNumber && m.game === gameNumber);
+                    if (matchIdx === -1) return s;
+                    const entry = s.matches[matchIdx];
+                    const otherASum = s.matches.reduce((sum, m, i) => sum + (m.round === round && m.court === courtNumber && i !== matchIdx ? m.scoreA : 0), 0);
+                    const otherBSum = s.matches.reduce((sum, m, i) => sum + (m.round === round && m.court === courtNumber && i !== matchIdx ? m.scoreB : 0), 0);
+                    let newA = scores.scoreA !== undefined ? scores.scoreA : entry.scoreA;
+                    let newB = scores.scoreB !== undefined ? scores.scoreB : entry.scoreB;
+                    newA = Math.min(Math.max(0, newA), 11, 33 - otherASum);
+                    newB = Math.min(Math.max(0, newB), 11, 33 - otherBSum);
+                    const oldA = entry.scoreA;
+                    const oldB = entry.scoreB;
+                    const oldRes: ResultMark = entry.result;
+                    const newRes: ResultMark = newA > newB ? 'A' : 'B';
+                    const aPlayers = entry.teamA.map(gp);
+                    const bPlayers = entry.teamB.map(gp);
+                    const winnersOld = oldRes === 'A' ? aPlayers : bPlayers;
+                    const losersOld = oldRes === 'A' ? bPlayers : aPlayers;
+                    const winnerScoreOld = oldRes === 'A' ? oldA : oldB;
+                    const loserScoreOld = oldRes === 'A' ? oldB : oldA;
+                    winnersOld.forEach(p => {
+                        p.pointsWon -= winnerScoreOld;
+                        p.pointsLost -= loserScoreOld;
+                        const h = p.history.find(h => h.round === entry.round && h.court === entry.court && h.game === entry.game);
+                        if (h) h.result = 'L';
+                    });
+                    losersOld.forEach(p => {
+                        p.pointsWon -= loserScoreOld;
+                        p.pointsLost -= winnerScoreOld;
+                        const h = p.history.find(h => h.round === entry.round && h.court === entry.court && h.game === entry.game);
+                        if (h) h.result = 'W';
+                    });
+                    if (entry.court === 1) {
+                        winnersOld.forEach(p => p.court1Finishes--);
+                    }
+
+                    const winnersNew = newRes === 'A' ? aPlayers : bPlayers;
+                    const losersNew = newRes === 'A' ? bPlayers : aPlayers;
+                    const winnerScoreNew = newRes === 'A' ? newA : newB;
+                    const loserScoreNew = newRes === 'A' ? newB : newA;
+                    winnersNew.forEach(p => {
+                        p.pointsWon += winnerScoreNew;
+                        p.pointsLost += loserScoreNew;
+                        const h = p.history.find(h => h.round === entry.round && h.court === entry.court && h.game === entry.game);
+                        if (h) { h.team = newRes; h.result = 'W'; }
+                    });
+                    losersNew.forEach(p => {
+                        p.pointsWon += loserScoreNew;
+                        p.pointsLost += winnerScoreNew;
+                        const h = p.history.find(h => h.round === entry.round && h.court === entry.court && h.game === entry.game);
+                        if (h) { h.team = newRes === 'A' ? 'B' : 'A'; h.result = 'L'; }
+                    });
+                    if (entry.court === 1) {
+                        winnersNew.forEach(p => p.court1Finishes++);
+                    }
+
+                    const updated = { ...entry, scoreA: newA, scoreB: newB, result: newRes };
+                    const matches = s.matches.map((m, i) => (i === matchIdx ? updated : m));
                     const courts = s.courts.map(c => {
                         if (c.court !== courtNumber) return c;
-                        const idx = c.history.findIndex(h => h.game === gameNumber);
+                        const idx = c.history.findIndex(h => h.round === round && h.game === gameNumber);
                         if (idx === -1) return c;
-                        const entry = c.history[idx];
-                        const otherASum = c.history.reduce((sum, g, i) => sum + (i === idx ? 0 : g.scoreA), 0);
-                        const otherBSum = c.history.reduce((sum, g, i) => sum + (i === idx ? 0 : g.scoreB), 0);
-                        let newA = scores.scoreA !== undefined ? scores.scoreA : entry.scoreA;
-                        let newB = scores.scoreB !== undefined ? scores.scoreB : entry.scoreB;
-                        newA = Math.min(Math.max(0, newA), 11, 33 - otherASum);
-                        newB = Math.min(Math.max(0, newB), 11, 33 - otherBSum);
-                        const oldA = entry.scoreA;
-                        const oldB = entry.scoreB;
-                        const oldRes: ResultMark = entry.result;
-                        const newRes: ResultMark = newA > newB ? 'A' : 'B';
-                        const aPlayers = entry.teamA.map(gp);
-                        const bPlayers = entry.teamB.map(gp);
-                        const winnersOld = oldRes === 'A' ? aPlayers : bPlayers;
-                        const losersOld = oldRes === 'A' ? bPlayers : aPlayers;
-                        const winnerScoreOld = oldRes === 'A' ? oldA : oldB;
-                        const loserScoreOld = oldRes === 'A' ? oldB : oldA;
-                        winnersOld.forEach(p => {
-                            p.pointsWon -= winnerScoreOld;
-                            p.pointsLost -= loserScoreOld;
-                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
-                            if (h) h.result = 'L';
-                        });
-                        losersOld.forEach(p => {
-                            p.pointsWon -= loserScoreOld;
-                            p.pointsLost -= winnerScoreOld;
-                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
-                            if (h) h.result = 'W';
-                        });
-                        if (c.court === 1) {
-                            winnersOld.forEach(p => p.court1Finishes--);
-                        }
-
-                        const winnersNew = newRes === 'A' ? aPlayers : bPlayers;
-                        const losersNew = newRes === 'A' ? bPlayers : aPlayers;
-                        const winnerScoreNew = newRes === 'A' ? newA : newB;
-                        const loserScoreNew = newRes === 'A' ? newB : newA;
-                        winnersNew.forEach(p => {
-                            p.pointsWon += winnerScoreNew;
-                            p.pointsLost += loserScoreNew;
-                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
-                            if (h) { h.team = newRes; h.result = 'W'; }
-                        });
-                        losersNew.forEach(p => {
-                            p.pointsWon += loserScoreNew;
-                            p.pointsLost += winnerScoreNew;
-                            const h = p.history.find(h => h.round === entry.round && h.court === c.court && h.game === entry.game);
-                            if (h) { h.team = newRes === 'A' ? 'B' : 'A'; h.result = 'L'; }
-                        });
-                        if (c.court === 1) {
-                            winnersNew.forEach(p => p.court1Finishes++);
-                        }
-
-                        const updated = { ...entry, scoreA: newA, scoreB: newB, result: newRes };
                         const history = c.history.map((h, i) => (i === idx ? updated : h));
                         return { ...c, history };
                     });
-                    return { ...s, courts };
+                    return { ...s, matches, courts };
                 });
             },
 
