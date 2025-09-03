@@ -10,6 +10,7 @@ import MatchScoresTable from './components/MatchScoresTable';
 import { useTournament } from './state/useTournament';
 import Panel from './components/Panel';
 import { useLocation } from 'react-router-dom';
+import TournamentSidebar from './components/TournamentSidebar';
 
 "use client";
 import { TypewriterEffectSmooth } from "./components/ui/typewriter-effect";
@@ -41,53 +42,56 @@ export default function App() {
             : '';
 
     return (
-        <div>
-            <Stack spacing={2} sx={{mb: 6}}>
-                <div style={{alignSelf: 'center'}}>
-                    <TypewriterEffectSmooth words={words}/>
-                </div>
-                <Typography style={{alignSelf: 'center'}} variant="body2" color="text.secondary">
-                    {isSmb ? 'Moneyball Madness!' : 'Where Every Court Pays Out!'}
-                </Typography>
-            </Stack>
+        <div className="flex">
+            <TournamentSidebar />
+            <div className="flex-1">
+                <Stack spacing={2} sx={{mb: 6}}>
+                    <div style={{alignSelf: 'center'}}>
+                        <TypewriterEffectSmooth words={words}/>
+                    </div>
+                    <Typography style={{alignSelf: 'center'}} variant="body2" color="text.secondary">
+                        {isSmb ? 'Moneyball Madness!' : 'Where Every Court Pays Out!'}
+                    </Typography>
+                </Stack>
 
-            <Grid container spacing={2}>
-                <Grid padding={5} xs={12} md={4}>
-                    <Panel>
-                        <SetupPanel/>
-                    </Panel>
-                    <Panel sx={{mt: 2}}>
-                        <PlayerList/>
-                    </Panel>
-                </Grid>
+                <Grid container spacing={2}>
+                    <Grid padding={5} xs={12} md={4}>
+                        <Panel>
+                            <SetupPanel/>
+                        </Panel>
+                        <Panel sx={{mt: 2}}>
+                            <PlayerList/>
+                        </Panel>
+                    </Grid>
 
-                <Grid padding={5} xs={12} md={8}>
-                    <Panel>
-                        <RoundControls/>
-                        {!started && (
-                            <Typography mt={2} color="text.secondary">
-                                Add 12-40 players (multiple of 4), set rounds, then Start Tournament.
+                    <Grid padding={5} xs={12} md={8}>
+                        <Panel>
+                            <RoundControls/>
+                            {!started && (
+                                <Typography mt={2} color="text.secondary">
+                                    Add 12-40 players (multiple of 4), set rounds, then Start Tournament.
+                                </Typography>
+                            )}
+                            <CourtsGrid/>
+                        </Panel>
+
+                        <Panel sx={{mt: 2}}>
+                            <Typography variant="h6" gutterBottom>
+                                Standings {standingsLabel}
                             </Typography>
-                        )}
-                        <CourtsGrid/>
-                    </Panel>
+                            <StandingsTable/>
+                        </Panel>
 
-                    <Panel sx={{mt: 2}}>
-                        <Typography variant="h6" gutterBottom>
-                            Standings {standingsLabel}
-                        </Typography>
-                        <StandingsTable/>
-                    </Panel>
+                        <Panel sx={{mt: 2}}>
+                            <MatchScoresTable/>
+                        </Panel>
 
-                    <Panel sx={{mt: 2}}>
-                        <MatchScoresTable/>
-                    </Panel>
-
-                    <Panel sx={{mt: 2}}>
-                        <PayoutsTable/>
-                    </Panel>
+                        <Panel sx={{mt: 2}}>
+                            <PayoutsTable/>
+                        </Panel>
+                    </Grid>
                 </Grid>
-            </Grid>
+            </div>
         </div>
     );
 }
