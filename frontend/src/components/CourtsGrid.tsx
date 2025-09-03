@@ -97,7 +97,7 @@ export default function CourtsGrid() {
                                                 label="A"
                                                 size="small"
                                                 value={g.scoreA}
-                                                onChange={e => editGame(court.court, g.game, { scoreA: Number(e.target.value) })}
+                                                onChange={e => editGame(g.round, court.court, g.game, { scoreA: Number(e.target.value) })}
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
                                                 sx={scoreInputSx}
                                             />
@@ -105,7 +105,7 @@ export default function CourtsGrid() {
                                                 label="B"
                                                 size="small"
                                                 value={g.scoreB}
-                                                onChange={e => editGame(court.court, g.game, { scoreB: Number(e.target.value) })}
+                                                onChange={e => editGame(g.round, court.court, g.game, { scoreB: Number(e.target.value) })}
                                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', min: 0, max: 11 }}
                                                 sx={scoreInputSx}
                                             />
