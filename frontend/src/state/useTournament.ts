@@ -429,7 +429,7 @@ const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
                 return merged;
             },
         }
-    );
+    ))
 
 const snlStore = createTournamentStore('snl');
 const smbStore = createTournamentStore('smb');

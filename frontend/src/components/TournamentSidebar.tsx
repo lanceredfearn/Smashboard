@@ -1,66 +1,70 @@
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarGroupContent,
+    SidebarMenu,
+    SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useAnnouncements } from '@/state/useAnnouncements';
+import {useAnnouncements} from '@/state/useAnnouncements';
 
 export default function TournamentSidebar() {
-  const announcements = useAnnouncements((s) => s.announcements);
+    const announcements = useAnnouncements((s) => s.announcements);
 
-  return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link
-              to="/"
-              className="flex w-full items-center rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              Home
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    return (
+        <Sidebar>
+            <SidebarContent>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <Link
+                            to="/"
+                            className="flex w-full items-center rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        >
+                            Home
+                        </Link>
+                    </SidebarMenuItem>
+                </SidebarMenu>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Rules</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <ul className="list-disc pl-4 text-xs space-y-1">
-              <li>Games to 11 points.</li>
-              <li>Win by 2.</li>
-              <li>Switch sides at 6.</li>
-            </ul>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Rules</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <ul className="list-disc pl-4 text-xs space-y-1">
+                            <li>Round Robin</li>
+                            <li>Games to 11 points.</li>
+                            <li>Win by 1.</li>
+                            <li>Switch sides at 6.</li>
+                            <li>Every player will play with every other player on assigned court</li>
+                            <li>Move up or down based on total points earned</li>
+                            <li>Ties are handled by point differential and then DUPR rating, lowest DUPR wins!</li>
+                        </ul>
+                    </SidebarGroupContent>
+                </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Announcements</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {announcements.length === 0 && (
-              <p className="text-xs text-muted-foreground">No announcements yet.</p>
-            )}
-            {announcements.map((a) => (
-              <div key={a.id} className="mb-2">
-                <div className="text-xs font-medium">
-                  {a.tournament} – {new Date(a.date).toLocaleDateString()}
-                </div>
-                <ul className="ml-4 list-disc text-xs">
-                  {a.winners.map((w) => (
-                    <li key={w.name}>
-                      {w.name}: {w.score}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
-  );
+                <SidebarGroup>
+                    <SidebarGroupLabel>Announcements</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        {announcements.length === 0 && (
+                            <p className="text-xs text-muted-foreground">No announcements yet.</p>
+                        )}
+                        {announcements.map((a) => (
+                            <div key={a.id} className="mb-2">
+                                <div className="text-xs font-medium">
+                                    {a.tournament} – {new Date(a.date).toLocaleDateString()}
+                                </div>
+                                <ul className="ml-4 list-disc text-xs">
+                                    {a.winners.map((w) => (
+                                        <li key={w.name}>
+                                            {w.name}: {w.score}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </SidebarGroupContent>
+                </SidebarGroup>
+            </SidebarContent>
+        </Sidebar>
+    );
 }
