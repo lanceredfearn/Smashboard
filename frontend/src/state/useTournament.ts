@@ -2,6 +2,7 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CourtState, Player, ResultMark, TournamentState, CourtPayout, CourtGame } from '@/types';
 import { seedInitialCourts, moveAndReform, formTeamsAvoidingRepeat } from '@/utils/rotation';
+import { useAnnouncements } from '@/state/useAnnouncements';
 
 const generateId = () =>
     (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
@@ -161,6 +162,9 @@ const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
                     let newB = scores.scoreB !== undefined ? scores.scoreB : entry.scoreB;
                     newA = Math.min(Math.max(0, newA), 11, 33 - otherASum);
                     newB = Math.min(Math.max(0, newB), 11, 33 - otherBSum);
+                    if (!((newA === 11 && newB <= 10) || (newB === 11 && newA <= 10))) {
+                        return s;
+                    }
                     const oldA = entry.scoreA;
                     const oldB = entry.scoreB;
                     const oldRes: ResultMark = entry.result;
@@ -229,7 +233,7 @@ const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
                         const valid =
                             c.scoreA !== undefined &&
                             c.scoreB !== undefined &&
-                            ((c.scoreA >= 11 || c.scoreB >= 11) && Math.abs(c.scoreA - c.scoreB) >= 2);
+                            ((c.scoreA === 11 && c.scoreB <= 10) || (c.scoreB === 11 && c.scoreA <= 10));
                         if (!valid) return c;
 
                         const scoreA = c.scoreA!;
@@ -295,25 +299,24 @@ const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
             },
 
             submitRound: () => {
+                const addAnnouncement = useAnnouncements.getState().addAnnouncement;
+                const isSmb = typeof window !== 'undefined' && window.location.pathname.startsWith('/smb');
                 set((s) => {
                     const courts = s.courts;
                     const roundDone = courts.every(c => c.submitted && c.game === GAMES_PER_ROUND);
                     if (!roundDone) return s;
-                    let round = s.round + 1;
-                    let started = s.started;
+                    if (s.round >= s.totalRounds) {
+                        const winners = get().standings().slice(0, 3).map(p => ({ name: p.name, score: p.pointsWon }));
+                        addAnnouncement({ tournament: isSmb ? 'SMB' : 'SNL', winners });
+                        return { ...s, started: false };
+                    }
                     const players = s.players.map(p => ({ ...p, partnerHistory: [] }));
                     const gpRound = (id: string) => {
                         const player = players.find(x => x.id === id);
                         if (!player) throw new Error('player not found');
                         return player;
                     };
-                    let nextCourts: CourtState[] = courts;
-                    if (round > s.totalRounds) {
-                        round = s.totalRounds;
-                        started = false;
-                    } else {
-                        nextCourts = moveAndReform(courts, gpRound).map(c => ({ ...c, game: 1 }));
-                    }
+                    const nextCourts = moveAndReform(courts, gpRound).map(c => ({ ...c, game: 1 }));
                     return {
                         ...s,
                         players,
@@ -324,8 +327,8 @@ const createTournamentStore = (name: string): UseBoundStore<StoreApi<Store>> =>
                             submitted: false,
                             history: [],
                         })),
-                        round,
-                        started,
+                        round: s.round + 1,
+                        started: s.started,
                     };
                 });
             },
