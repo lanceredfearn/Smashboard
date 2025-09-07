@@ -16,6 +16,7 @@ import { useTournament } from '../state/useTournament';
 export default function CourtsGrid() {
     const courts = useTournament(s => s.courts);
     const players = useTournament(s => s.players);
+    const started = useTournament(s => s.started);
     const markResult = useTournament(s => s.markCourtResult);
     const editGame = useTournament(s => s.editGameScore);
     const submitCourt = useTournament(s => s.submitCourt);
@@ -30,12 +31,12 @@ export default function CourtsGrid() {
     const formatTeam = (ids: string[]) =>
         ids.map(id => nameMap[id] ?? 'Unknown').join(' & ');
 
-    if (!courts.length) return null;
+    if (!started || !courts.length) return null;
 
     const canSubmit = (court: typeof courts[number]) =>
         court.scoreA !== undefined &&
         court.scoreB !== undefined &&
-        ((court.scoreA >= 11 || court.scoreB >= 11) && Math.abs(court.scoreA - court.scoreB) >= 2);
+        ((court.scoreA === 11 && court.scoreB <= 10) || (court.scoreB === 11 && court.scoreA <= 10));
 
     const roundComplete = courts.every(c => c.submitted && c.game === 3);
     const scoreInputSx = { width: 60 } as const;
