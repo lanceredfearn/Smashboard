@@ -20,7 +20,7 @@ export default function TournamentSidebar() {
           <SidebarMenuItem>
             <Link
               to="/"
-              className="flex w-full items-center rounded-md px-2 py-1 hover:bg-accent hover:text-accent-foreground"
+              className="flex w-full items-center rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
               Home
             </Link>

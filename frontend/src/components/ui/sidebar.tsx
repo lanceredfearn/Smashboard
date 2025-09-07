@@ -5,7 +5,10 @@ const Sidebar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEle
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex h-screen w-64 flex-col border-r bg-background p-4 text-sm', className)}
+      className={cn(
+        'flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground text-sm',
+        className,
+      )}
       {...props}
     />
   )
@@ -56,7 +59,10 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAt
   ({ className, ...props }, ref) => (
     <button
       ref={ref}
-      className={cn('flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-accent hover:text-accent-foreground', className)}
+      className={cn(
+        'flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        className,
+      )}
       {...props}
     />
   )
